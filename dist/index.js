@@ -168,7 +168,7 @@ const HTTP_ALIASES = {
     "delete-site": "delete-site",
     "db-action": "db-action",
 };
-const PLUGIN_VERSION = "0.3.4";
+const PLUGIN_VERSION = "0.3.5";
 export default (() => {
     const feature = defineFeaturePlugin({
         contract,

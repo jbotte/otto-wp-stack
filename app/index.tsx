@@ -67,9 +67,11 @@ async function fetchFallback(argv) {
   if (!auth.token || auth.token.startsWith("<")) {
     return { error: "no API token set — open the app's Settings and paste the token from the otto-wp-stack plugin (.api-token file)." };
   }
+  // Only the explicitly configured gateway origin receives the bearer token.
+  // Never add location.origin: if the dashboard is hosted elsewhere (e.g. a
+  // shared link), that would disclose the token to the hosting origin.
   const bases = [];
-  if (typeof location !== "undefined" && /^https?:/.test(location.origin || "")) bases.push(location.origin);
-  if (auth.apiBase && !bases.includes(auth.apiBase)) bases.push(auth.apiBase);
+  if (auth.apiBase) bases.push(auth.apiBase);
   let last = { error: "plugin unreachable" };
   for (const b of bases) {
     try {

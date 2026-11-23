@@ -197,7 +197,7 @@ const HTTP_ALIASES: Record<string, string> = {
   "db-action": "db-action",
 };
 
-const PLUGIN_VERSION = "0.3.4";
+const PLUGIN_VERSION = "0.3.5";
 
 export default (() => {
   const feature = defineFeaturePlugin<typeof contract>({

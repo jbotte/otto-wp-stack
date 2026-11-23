@@ -66,6 +66,7 @@ async function main() {
   const [op, args] = translate(argv);
   if (!op) { console.log(JSON.stringify({ error: "unknown command: " + argv[0] })); return; }
 
+  const cfg = loadConfig();
   const token = String(cfg.token ?? "").trim();
   if (!token || token.startsWith("<")) {
     console.log(JSON.stringify({ error: "no API token set — open the app's Settings and paste the token from the otto-wp-stack plugin (.api-token file)." }));

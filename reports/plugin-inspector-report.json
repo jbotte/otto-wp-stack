@@ -1060,7 +1060,7 @@
       }
     },
     "cache": {
-      "hit": false,
+      "hit": true,
       "key": "2026.11.7-48d8465fb7e3"
     }
   },
@@ -1090,14 +1090,14 @@
         {
           "name": "registerHttpRoute",
           "file": "dist/index.js",
-          "line": 290,
-          "ref": "dist/index.js:290"
+          "line": 295,
+          "ref": "dist/index.js:295"
         },
         {
           "name": "registerHttpRoute",
           "file": "src/index.ts",
-          "line": 325,
-          "ref": "src/index.ts:325"
+          "line": 331,
+          "ref": "src/index.ts:331"
         }
       ],
       "manifestContracts": [
@@ -1107,6 +1107,7 @@
         "openclaw.plugin.json"
       ],
       "sourceFiles": [
+        "app/scripts/stack.mjs",
         "dist/engine.js",
         "dist/index.js",
         "dist/stack.js",
@@ -1143,7 +1144,7 @@
       "package": {
         "path": "package.json",
         "name": "@lunarlyra/otto-wp-stack",
-        "version": "0.3.1",
+        "version": "0.3.4",
         "type": "module",
         "main": "./dist/index.js",
         "npmPack": {
@@ -1152,8 +1153,10 @@
           "filesMode": "allowlist",
           "files": [
             "dist",
+            "bin",
             "openclaw.plugin.json",
-            "README.md"
+            "README.md",
+            "app"
           ],
           "invalidFileSpecs": []
         },
@@ -1192,7 +1195,7 @@
         {
           "path": "package.json",
           "name": "@lunarlyra/otto-wp-stack",
-          "version": "0.3.1",
+          "version": "0.3.4",
           "type": "module",
           "main": "./dist/index.js",
           "npmPack": {
@@ -1201,8 +1204,10 @@
             "filesMode": "allowlist",
             "files": [
               "dist",
+              "bin",
               "openclaw.plugin.json",
-              "README.md"
+              "README.md",
+              "app"
             ],
             "invalidFileSpecs": []
           },
@@ -1275,9 +1280,9 @@
         "inputKind": "source",
         "status": "complete",
         "coverage": {
-          "filesDiscovered": 18,
-          "filesAnalyzed": 5,
-          "filesExcluded": 13
+          "filesDiscovered": 25,
+          "filesAnalyzed": 7,
+          "filesExcluded": 18
         },
         "entries": [
           {
@@ -1313,7 +1318,7 @@
               },
               {
                 "path": "src/index.ts",
-                "line": 282,
+                "line": 288,
                 "snippet": "log.info(\"otto-wp-stack: HTTP API token rotated\");"
               }
             ],
@@ -2151,7 +2156,7 @@
             "evidence": [
               {
                 "path": "src/index.ts",
-                "line": 325,
+                "line": 331,
                 "snippet": "api.registerHttpRoute({"
               }
             ],
@@ -2333,7 +2338,7 @@
               },
               {
                 "path": "src/index.ts",
-                "line": 429,
+                "line": 436,
                 "snippet": "return h as unknown as FeatureHandlers<typeof contract>;"
               }
             ],
@@ -2413,9 +2418,9 @@
     "inputKind": "source",
     "status": "complete",
     "coverage": {
-      "filesDiscovered": 18,
-      "filesAnalyzed": 5,
-      "filesExcluded": 13
+      "filesDiscovered": 25,
+      "filesAnalyzed": 7,
+      "filesExcluded": 18
     },
     "entries": [
       {
@@ -2451,7 +2456,7 @@
           },
           {
             "path": "src/index.ts",
-            "line": 282,
+            "line": 288,
             "snippet": "log.info(\"otto-wp-stack: HTTP API token rotated\");"
           }
         ],
@@ -3289,7 +3294,7 @@
         "evidence": [
           {
             "path": "src/index.ts",
-            "line": 325,
+            "line": 331,
             "snippet": "api.registerHttpRoute({"
           }
         ],
@@ -3471,7 +3476,7 @@
           },
           {
             "path": "src/index.ts",
-            "line": 429,
+            "line": 436,
             "snippet": "return h as unknown as FeatureHandlers<typeof contract>;"
           }
         ],
@@ -3592,7 +3597,7 @@
       "evidence": [
         "package.json",
         "@lunarlyra/otto-wp-stack",
-        "version:0.3.1"
+        "version:0.3.4"
       ]
     },
     {
