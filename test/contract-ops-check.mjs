@@ -39,4 +39,11 @@ if (unknown.length) {
   process.exit(1);
 }
 
+const pkg = JSON.parse(readFileSync(path.join(here, "..", "package.json"), "utf8"));
+const ver = src.match(/const PLUGIN_VERSION = "([^"]+)"/)?.[1];
+if (ver !== pkg.version) {
+  console.error(`FAIL  version: PLUGIN_VERSION ${ver} != package.json ${pkg.version}`);
+  process.exit(1);
+}
+
 console.log(`PASS  contract: ${keys.length} operation ids valid; app emits only known ops`);
