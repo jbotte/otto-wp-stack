@@ -31,6 +31,10 @@
     "extensions": [
       "./dist/index.js"
     ],
+    "build": {
+      "openclawVersion": "2026.11.3",
+      "pluginSdkVersion": "2026.11.3"
+    },
     "compat": {
       "pluginApi": ">=2026.11.3",
       "minGatewayVersion": "2026.11.3"
