@@ -90,7 +90,7 @@ const contract = defineFeatureContract({
       input: Type.Object({}),
       output: OUT,
     },
-    bootstrapRun: {
+    "bootstrap-run": {
       kind: "action",
       description:
         "Install the stack's own runtime (static PHP with mysqli, WP-CLI, MariaDB bintar; then db init + stack user). First run downloads ~360 MB and takes several minutes; returns immediately, poll 'bootstrap' for progress. Idempotent.",
@@ -110,7 +110,7 @@ const contract = defineFeatureContract({
       input: Type.Object({}),
       output: OUT,
     },
-    siteAction: {
+    "site-action": {
       kind: "action",
       description: "start|stop|restart a site this stack owns.",
       input: Type.Object({
@@ -120,7 +120,7 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_site_action" },
     },
-    createSite: {
+    "create-site": {
       kind: "action",
       description: "Create a new WordPress site (own database + own php server). One-time admin password returned once.",
       input: Type.Object({
@@ -132,7 +132,7 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_create" },
     },
-    deleteSite: {
+    "delete-site": {
       kind: "action",
       description: "Delete a site. Requires passing the site id twice (id === confirm).",
       input: Type.Object({
@@ -142,7 +142,7 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_delete_site" },
     },
-    dbAction: {
+    "db-action": {
       kind: "action",
       description: "start|stop this stack's own MariaDB (port is stack-owned, never 3306).",
       input: Type.Object({ action: Type.Union([Type.Literal("start"), Type.Literal("stop")]) }),
@@ -180,7 +180,7 @@ const CONFIG_SCHEMA = Type.Object({
   apiToken: Type.Optional(Type.String({ minLength: 16, description: "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory." })),
 });
 
-const MUTATIONS = new Set(["siteAction", "createSite", "deleteSite", "dbAction", "bootstrapRun"]);
+const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run"]);
 
 /** HTTP alias table so curl/scripts can use short op names. */
 const HTTP_ALIASES: Record<string, string> = {
@@ -188,13 +188,13 @@ const HTTP_ALIASES: Record<string, string> = {
   sites: "sites",
   details: "details",
   bootstrap: "bootstrap",
-  "bootstrap-run": "bootstrapRun",
+  "bootstrap-run": "bootstrap-run",
   rules: "rules",
   probe: "probe",
-  "site-action": "siteAction",
-  create: "createSite",
-  "delete-site": "deleteSite",
-  "db-action": "dbAction",
+  "site-action": "site-action",
+  create: "create-site",
+  "delete-site": "delete-site",
+  "db-action": "db-action",
 };
 
 const PLUGIN_VERSION = "0.2.0";
@@ -256,19 +256,19 @@ export default (() => {
             return opDetails(cfg, String(a.siteId ?? ""));
           case "bootstrap":
             return opBootstrap(cfg);
-          case "bootstrapRun":
+          case "bootstrap-run":
             return opBootstrapRun(cfg);
           case "rules":
             return serveRules(cfg);
           case "probe":
             return opProbe(cfg);
-          case "siteAction":
+          case "site-action":
             return opSiteAction(cfg, String(a.siteId ?? ""), String(a.action ?? ""));
-          case "createSite":
+          case "create-site":
             return opCreate(cfg, String(a.id ?? ""), String(a.name ?? ""), String(a.adminUser ?? ""), String(a.email ?? ""));
-          case "deleteSite":
+          case "delete-site":
             return opDeleteSite(cfg, String(a.id ?? ""), String(a.confirm ?? ""));
-          case "dbAction":
+          case "db-action":
             return opDbAction(cfg, String(a.action ?? ""));
           case "revealToken":
             return { ok: true, token: loadOrMintToken() };
@@ -416,13 +416,13 @@ export default (() => {
         bootstrap: async () => invoke("bootstrap", {}),
         rules: async () => invoke("rules", {}),
         probe: async () => invoke("probe", {}),
-        siteAction: async ({ siteId, action }: { siteId: string; action: string }) =>
-          invokeAndSignal("siteAction", { siteId, action }),
-        createSite: async (i: { id: string; name: string; adminUser: string; email: string }) =>
-          invokeAndSignal("createSite", { ...i }),
-        deleteSite: async ({ id, confirm }: { id: string; confirm: string }) =>
-          invokeAndSignal("deleteSite", { id, confirm }),
-        dbAction: async ({ action }: { action: string }) => invokeAndSignal("dbAction", { action }),
+        "site-action": async ({ siteId, action }: { siteId: string; action: string }) =>
+          invokeAndSignal("site-action", { siteId, action }),
+        "create-site": async (i: { id: string; name: string; adminUser: string; email: string }) =>
+          invokeAndSignal("create-site", { ...i }),
+        "delete-site": async ({ id, confirm }: { id: string; confirm: string }) =>
+          invokeAndSignal("delete-site", { id, confirm }),
+        "db-action": async ({ action }: { action: string }) => invokeAndSignal("db-action", { action }),
         revealToken: async () => invoke("revealToken", {}),
         rotateToken: async () => invoke("rotateToken", {}),
       };
