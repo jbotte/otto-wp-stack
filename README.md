@@ -53,6 +53,18 @@ apps/wp-stack-next/            ← the Otto dashboard app (artifact)
 
 ## Deploy to a fresh Otto
 
+**Quickest path (published on ClawHub):** just tell the new Otto:
+
+> *"Install @lunarlyra/otto-wp-stack from ClawHub, enable it, and set up the WP Stack dashboard."*
+
+Otto installs the plugin (`openclaw plugins install clawhub:@lunarlyra/otto-wp-stack`),
+you tap the approval card, then open the **WP Stack (Standalone)** dashboard and
+press **Install runtime** — the plugin downloads and configures its own PHP,
+WP-CLI and MariaDB. No terminal, no sudo.
+
+<details>
+<summary>Manual path (copy-from-scratch, or offline)</summary>
+
 The **plugin installs its own runtime** — the only terminal step is installing
 the plugin itself. Run these as the **Otto agent user** (the default Otto
 terminal). Nothing here needs sudo.
@@ -98,6 +110,8 @@ One-shot alternative: after step 2, say to Otto —
 > plugin's .api-token into apps/wp-stack-next/config.json
 
 and Otto does the rest.
+
+</details>
 
 ## Daily use (the app)
 
