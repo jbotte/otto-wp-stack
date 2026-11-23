@@ -2,7 +2,7 @@
   "id": "otto-wp-stack",
   "name": "Otto WP Stack",
   "description": "Standalone headless WordPress stack: own runtime, database, sites and registry — typed agent tools plus a token-authed local HTTP API for the Otto dashboard app.",
-  "categories": ["developer-tools", "operations"],
+  "categories": ["developer-tools"],
   "contracts": {
     "tools": [
       "wp_stack_status",
