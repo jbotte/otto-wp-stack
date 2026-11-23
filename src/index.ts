@@ -414,6 +414,7 @@ export default (() => {
         sites: async () => invoke("sites", {}),
         details: async ({ siteId }: { siteId: string }) => invoke("details", { siteId }),
         bootstrap: async () => invoke("bootstrap", {}),
+        "bootstrap-run": async () => invokeAndSignal("bootstrap-run", {}),
         rules: async () => invoke("rules", {}),
         probe: async () => invoke("probe", {}),
         "site-action": async ({ siteId, action }: { siteId: string; action: string }) =>

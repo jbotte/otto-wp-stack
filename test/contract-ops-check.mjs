@@ -20,6 +20,16 @@ if (bad.length) {
   process.exit(1);
 }
 
+// Every declared operation must have a handler, or activation fails with
+// "Feature operation <id> is missing its handler".
+const handlerBlock = src.slice(src.indexOf("const h = {"), src.indexOf("return h as"));
+const handlerKeys = [...handlerBlock.matchAll(/^\s{8}"?([a-z0-9._-]+)"?: async/gm)].map((m) => m[1]);
+const missing = keys.filter((k) => !handlerKeys.includes(k));
+if (missing.length) {
+  console.error(`FAIL  contract: operations missing handlers: ${missing.join(", ")}`);
+  process.exit(1);
+}
+
 // App translate() must only emit ids that exist in the contract.
 const app = readFileSync(path.join(here, "..", "..", "apps", "wp-stack-next", "index.tsx"), "utf8");
 const emitted = [...app.matchAll(/return \["([a-z0-9-]+)"/g)].map((m) => m[1]);
