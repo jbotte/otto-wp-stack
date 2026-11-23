@@ -197,7 +197,7 @@ const HTTP_ALIASES: Record<string, string> = {
   "db-action": "db-action",
 };
 
-const PLUGIN_VERSION = "0.3.5";
+const PLUGIN_VERSION = "0.3.6";
 
 export default (() => {
   const feature = defineFeaturePlugin<typeof contract>({
@@ -318,13 +318,40 @@ export default (() => {
 
       function readBody(req: IncomingMessage): Promise<string> {
         return new Promise((resolve, reject) => {
-          let text = "";
+          const chunks: Buffer[] = [];
+          let size = 0;
+          let settled = false;
+          const failTooLarge = () => {
+            if (settled) return;
+            settled = true;
+            // Stop retaining received bytes and stop receiving more: detach the
+            // listeners and drop what we hold, so an oversized upload cannot
+            // keep growing memory after we already rejected (CWE-400).
+            req.removeAllListeners("data");
+            req.removeAllListeners("end");
+            chunks.length = 0;
+            size = 0;
+            reject(new Error("Request too large"));
+          };
           req.on("data", (c: Buffer) => {
-            text += c.toString("utf8");
-            if (Buffer.byteLength(text) > MAX_BODY) reject(new Error("Request too large"));
+            if (settled) return;
+            size += c.length; // running count — never re-measure the whole buffer
+            if (size > MAX_BODY) {
+              failTooLarge();
+              return;
+            }
+            chunks.push(c);
           });
-          req.on("end", () => resolve(text));
-          req.on("error", reject);
+          req.on("end", () => {
+            if (settled) return;
+            settled = true;
+            resolve(Buffer.concat(chunks).toString("utf8"));
+          });
+          req.on("error", (e: Error) => {
+            if (settled) return;
+            settled = true;
+            reject(e);
+          });
         });
       }
 
@@ -374,11 +401,17 @@ export default (() => {
               op = seg || String(u.searchParams.get("op") ?? "");
               for (const [k, v] of u.searchParams.entries()) if (k !== "op") args[k] = v;
             } else if (req.method === "POST") {
+              const declared = Number(req.headers["content-length"] ?? 0);
+              if (Number.isFinite(declared) && declared > MAX_BODY) {
+                json(res, 413, { error: "Request too large" });
+                return true;
+              }
               let text: string;
               try {
                 text = await readBody(req);
               } catch (e) {
-                json(res, 400, { error: (e as Error).message });
+                const msg = (e as Error).message;
+                json(res, msg === "Request too large" ? 413 : 400, { error: msg });
                 return true;
               }
               let parsed: { op?: unknown; args?: unknown };
