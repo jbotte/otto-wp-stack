@@ -1,0 +1,57 @@
+{
+  "id": "otto-wp-stack",
+  "name": "Otto WP Stack",
+  "description": "Standalone headless WordPress stack: own runtime, database, sites and registry — typed agent tools plus a token-authed local HTTP API for the Otto dashboard app.",
+  "categories": ["developer-tools", "operations"],
+  "contracts": {
+    "tools": [
+      "wp_stack_status",
+      "wp_stack_sites",
+      "wp_stack_details",
+      "wp_stack_site_action",
+      "wp_stack_create",
+      "wp_stack_delete_site",
+      "wp_stack_db"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "stackRoot": {
+        "type": "string",
+        "description": "Stack folder holding runtime/, db/, sites/, sites.json (Default: agent-workspace/wp-stack when a workspace exists, otherwise ~/otto-wp-stack)."
+      },
+      "dbPort": {
+        "type": "integer",
+        "minimum": 1024,
+        "maximum": 65535,
+        "description": "Stack-owned MariaDB port (default 3307; never 3306)."
+      },
+      "dbUser": {
+        "type": "string",
+        "description": "Stack-owned MariaDB user created by bin/wp-stack-bootstrap.sh (default wp_stack)."
+      },
+      "portMin": {
+        "type": "integer",
+        "minimum": 1024,
+        "maximum": 65535,
+        "description": "First site port (default 8100)."
+      },
+      "portMax": {
+        "type": "integer",
+        "minimum": 1024,
+        "maximum": 65535,
+        "description": "Last site port (default 8199)."
+      },
+      "apiToken": {
+        "type": "string",
+        "minLength": 16,
+        "description": "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory."
+      }
+    }
+  }
+}

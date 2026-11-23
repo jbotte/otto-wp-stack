@@ -1,0 +1,44 @@
+{
+  "name": "@lunarlyra/otto-wp-stack",
+  "version": "0.3.0",
+  "description": "Headless WordPress dev-stack backend for Otto: typed agent tools + a token-authed HTTP API the dashboard artifact talks to.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "bin",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "plugin:build": "npm run build && openclaw plugins build --entry ./dist/index.js",
+    "plugin:validate": "npm run build && openclaw plugins validate --entry ./dist/index.js"
+  },
+  "dependencies": {
+    "typebox": "1.3.35"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5.9.2"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.11.3"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.11.3",
+      "minGatewayVersion": "2026.11.3"
+    }
+  },
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md"
+  ]
+}
