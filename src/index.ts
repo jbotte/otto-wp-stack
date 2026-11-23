@@ -149,13 +149,13 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_db" },
     },
-    revealToken: {
+    "reveal-token": {
       kind: "action",
       description: "Print the HTTP API token so the owner can paste it into the dashboard app settings.",
       input: Type.Object({}),
       output: Type.Object({ ok: Type.Optional(Type.Boolean()), token: Type.Optional(Type.String()) }),
     },
-    rotateToken: {
+    "rotate-token": {
       kind: "action",
       description: "Generate a fresh HTTP API token (invalidates the old one).",
       input: Type.Object({}),
@@ -270,9 +270,9 @@ export default (() => {
             return opDeleteSite(cfg, String(a.id ?? ""), String(a.confirm ?? ""));
           case "db-action":
             return opDbAction(cfg, String(a.action ?? ""));
-          case "revealToken":
+          case "reveal-token":
             return { ok: true, token: loadOrMintToken() };
-          case "rotateToken": {
+          case "rotate-token": {
             apiToken = crypto.randomBytes(32).toString("hex");
             try {
               fs.writeFileSync(tokenFile, apiToken + "\n", { mode: 0o600 });
@@ -423,8 +423,8 @@ export default (() => {
         "delete-site": async ({ id, confirm }: { id: string; confirm: string }) =>
           invokeAndSignal("delete-site", { id, confirm }),
         "db-action": async ({ action }: { action: string }) => invokeAndSignal("db-action", { action }),
-        revealToken: async () => invoke("revealToken", {}),
-        rotateToken: async () => invoke("rotateToken", {}),
+        "reveal-token": async () => invoke("reveal-token", {}),
+        "rotate-token": async () => invoke("rotate-token", {}),
       };
       return h as unknown as FeatureHandlers<typeof contract>;
     },

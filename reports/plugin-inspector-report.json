@@ -1,0 +1,3609 @@
+{
+  "generatedAt": "deterministic",
+  "targetOpenClaw": {
+    "configuredPath": "npm:openclaw@2026.11.7",
+    "checkoutPath": ".",
+    "searchedPaths": [
+      "npm:openclaw@2026.11.7"
+    ],
+    "status": "ok",
+    "version": "2026.11.7",
+    "compatRegistryPath": null,
+    "compatRecordCount": 50,
+    "compatRecords": [
+      "acp-session-sync-read",
+      "agent-end-sync-side-effects",
+      "agent-harness-sync-tool-construction",
+      "approval-event-sync-publication",
+      "approval-routing-sync-preparation",
+      "auth-profile-sync-operations",
+      "channel-inbound-sync-envelope-timestamps",
+      "channel-pairing-sync-allowlist",
+      "channel-policy-sync-preparation",
+      "codex-transcript-sync-validation",
+      "conversation-binding-sync-mutations",
+      "conversation-binding-sync-persistence",
+      "cron-store-sync-path",
+      "debug-proxy-sync-capture",
+      "extension-session-sync-persistence",
+      "github-publication-native-callbacks",
+      "memory-session-sync-inventory",
+      "memory-session-sync-metadata",
+      "model-account-connect-sync-persistence",
+      "native-session-binding-sync-persistence",
+      "native-session-deletion-unbound-callbacks",
+      "native-session-generation-sync-authority",
+      "node-workspace-sync-acquisition",
+      "pending-input-sync-completion",
+      "plugin-state-sync-keyed-store",
+      "provider-model-capabilities-sync-read",
+      "provider-replay-sync-persistence",
+      "reply-run-start-unprepared-transcript",
+      "reply-tool-authority-sync-preparation",
+      "runtime-config-sync-load",
+      "session-catalog-sync-preparation",
+      "session-manager-sync-context-read",
+      "session-manager-sync-persistence",
+      "session-observer-progress-sync-reads",
+      "session-reset-freshness-sync-read",
+      "session-store-opaque-mutations",
+      "session-store-sync-listing",
+      "session-store-sync-readers",
+      "session-transcript-sync-statistics",
+      "session-transcript-sync-view",
+      "session-upstream-links-sync-persistence",
+      "skill-command-discovery-sync",
+      "sqlite-runtime-native-access",
+      "transcript-lock-sync-message-preparation",
+      "transcript-session-key-sync-resolution",
+      "transcript-strict-sync-message-preparation",
+      "tts-preferences-sync-resolution",
+      "watched-sessions-sync-harness-context",
+      "web-search-sync-provider-list",
+      "workspace-mutation-guard-callback"
+    ],
+    "compatRecordStatuses": {
+      "acp-session-sync-read": "deprecated",
+      "agent-end-sync-side-effects": "deprecated",
+      "agent-harness-sync-tool-construction": "deprecated",
+      "approval-event-sync-publication": "deprecated",
+      "approval-routing-sync-preparation": "deprecated",
+      "auth-profile-sync-operations": "deprecated",
+      "channel-inbound-sync-envelope-timestamps": "deprecated",
+      "channel-pairing-sync-allowlist": "deprecated",
+      "channel-policy-sync-preparation": "deprecated",
+      "codex-transcript-sync-validation": "deprecated",
+      "conversation-binding-sync-mutations": "deprecated",
+      "conversation-binding-sync-persistence": "deprecated",
+      "cron-store-sync-path": "deprecated",
+      "debug-proxy-sync-capture": "deprecated",
+      "extension-session-sync-persistence": "deprecated",
+      "github-publication-native-callbacks": "deprecated",
+      "memory-session-sync-inventory": "deprecated",
+      "memory-session-sync-metadata": "deprecated",
+      "model-account-connect-sync-persistence": "deprecated",
+      "native-session-binding-sync-persistence": "deprecated",
+      "native-session-deletion-unbound-callbacks": "deprecated",
+      "native-session-generation-sync-authority": "deprecated",
+      "node-workspace-sync-acquisition": "deprecated",
+      "pending-input-sync-completion": "deprecated",
+      "plugin-state-sync-keyed-store": "deprecated",
+      "provider-model-capabilities-sync-read": "deprecated",
+      "provider-replay-sync-persistence": "deprecated",
+      "reply-run-start-unprepared-transcript": "deprecated",
+      "reply-tool-authority-sync-preparation": "deprecated",
+      "runtime-config-sync-load": "deprecated",
+      "session-catalog-sync-preparation": "deprecated",
+      "session-manager-sync-context-read": "deprecated",
+      "session-manager-sync-persistence": "deprecated",
+      "session-observer-progress-sync-reads": "deprecated",
+      "session-reset-freshness-sync-read": "deprecated",
+      "session-store-opaque-mutations": "deprecated",
+      "session-store-sync-listing": "deprecated",
+      "session-store-sync-readers": "deprecated",
+      "session-transcript-sync-statistics": "deprecated",
+      "session-transcript-sync-view": "deprecated",
+      "session-upstream-links-sync-persistence": "deprecated",
+      "skill-command-discovery-sync": "deprecated",
+      "sqlite-runtime-native-access": "deprecated",
+      "transcript-lock-sync-message-preparation": "deprecated",
+      "transcript-session-key-sync-resolution": "deprecated",
+      "transcript-strict-sync-message-preparation": "deprecated",
+      "tts-preferences-sync-resolution": "deprecated",
+      "watched-sessions-sync-harness-context": "deprecated",
+      "web-search-sync-provider-list": "deprecated",
+      "workspace-mutation-guard-callback": "deprecated"
+    },
+    "compatDeprecations": [
+      {
+        "code": "agent-end-sync-side-effects",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/agent-harness-runtime.runAgentEndSideEffects"
+        ],
+        "replacement": "Await runAgentEndSideEffectsAsync before releasing the turn lease. The released runAgentEndSideEffects helper retains its synchronous void result and scheduling behavior through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-agent-harness/attempt-runtime#agent-end-side-effects",
+        "replacementExports": [
+          "runAgentEndSideEffectsAsync",
+          "runAgentEndSideEffects"
+        ]
+      },
+      {
+        "code": "approval-event-sync-publication",
+        "status": "deprecated",
+        "surfaces": [
+          "GatewayRequestHandlerOptions.context.approvalEvents.publishRequested"
+        ],
+        "replacement": "Await approvalEvents.publishRequestedAsync. The legacy publisher retains synchronous delivery counts for synchronous subscribers and refuses async eligibility before delivery; removed in the first January 2027 stable release after the final compatibility day, 2026-12-31.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-gateway-approval-publication",
+        "replacementExports": [
+          "publishRequestedAsync"
+        ]
+      },
+      {
+        "code": "approval-routing-sync-preparation",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/approval-client-runtime.createChannelExecApprovalProfile",
+          "openclaw/plugin-sdk/approval-delivery-runtime.createApproverRestrictedNativeApprovalCapability",
+          "openclaw/plugin-sdk/approval-delivery-runtime.createApproverRestrictedNativeApprovalCapabilityFromForwardingRoutes",
+          "openclaw/plugin-sdk/approval-handler-adapter-runtime.createLazyChannelApprovalNativeRuntimeAdapter",
+          "openclaw/plugin-sdk/approval-handler-runtime.createChannelApprovalNativeRuntimeAdapter",
+          "openclaw/plugin-sdk/approval-native-runtime.createChannelApproverDmTargetResolver",
+          "openclaw/plugin-sdk/approval-native-runtime.createChannelNativeOriginTargetResolver",
+          "openclaw/plugin-sdk/approval-native-runtime.createNativeApprovalChannelRouteGates",
+          "openclaw/plugin-sdk/approval-native-runtime.createNativeApprovalForwardingFallbackSuppressor",
+          "openclaw/plugin-sdk/approval-native-runtime.doesApprovalRequestSelectChannelAccount",
+          "openclaw/plugin-sdk/approval-native-runtime.resolveApprovalRequestAccountId",
+          "openclaw/plugin-sdk/approval-native-runtime.resolveApprovalRequestChannelAccountId",
+          "openclaw/plugin-sdk/approval-runtime.doesApprovalRequestMatchChannelAccount",
+          "openclaw/plugin-sdk/approval-runtime.resolveApprovalRequestOriginTarget",
+          "openclaw/plugin-sdk/approval-runtime.resolveApprovalRequestSessionTarget",
+          "openclaw/plugin-sdk/approval-runtime.resolveExecApprovalSessionTarget"
+        ],
+        "replacement": "Use the Async-suffixed approval factories and resolvers, then await their returned eligibility and routing callbacks. Reuse resolveApprovalRequestSessionDeliveryAsync facts for one route decision. Factories remain synchronous; Async names describe their awaited callbacks. Keep live approval and delivery authority at the effect boundary.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#migrate-inspection-authorization-and-approval-factories",
+        "replacementExports": [
+          "resolveApprovalRequestSessionDeliveryAsync",
+          "createChannelExecApprovalProfileAsync",
+          "createApproverRestrictedNativeApprovalCapabilityAsync",
+          "createApproverRestrictedNativeApprovalCapabilityFromForwardingRoutesAsync",
+          "createLazyChannelApprovalNativeRuntimeAdapterAsync",
+          "createChannelApprovalNativeRuntimeAdapterAsync",
+          "createChannelApproverDmTargetResolverAsync",
+          "createChannelNativeOriginTargetResolverAsync",
+          "createNativeApprovalChannelRouteGatesAsync",
+          "createNativeApprovalForwardingFallbackSuppressorAsync",
+          "doesApprovalRequestSelectChannelAccountAsync",
+          "resolveApprovalRequestAccountIdAsync",
+          "resolveApprovalRequestChannelAccountIdAsync",
+          "doesApprovalRequestMatchChannelAccountAsync",
+          "resolveApprovalRequestOriginTargetAsync",
+          "resolveApprovalRequestSessionTargetAsync",
+          "resolveExecApprovalSessionTargetAsync"
+        ]
+      },
+      {
+        "code": "channel-inbound-sync-envelope-timestamps",
+        "status": "deprecated",
+        "surfaces": [
+          "api.runtime.channel.session.readSessionUpdatedAt",
+          "openclaw/plugin-sdk/channel-inbound.createChannelInboundEnvelopeBuilder",
+          "openclaw/plugin-sdk/channel-inbound.dispatchInboundDirectDmWithRuntime",
+          "openclaw/plugin-sdk/channel-inbound.resolveChannelInboundRouteEnvelope",
+          "openclaw/plugin-sdk/channel-inbound.resolveInboundSessionEnvelopeContext",
+          "openclaw/plugin-sdk/inbound-envelope.createInboundEnvelopeBuilder",
+          "openclaw/plugin-sdk/inbound-envelope.resolveInboundRouteEnvelopeBuilder",
+          "openclaw/plugin-sdk/inbound-envelope.resolveInboundRouteEnvelopeBuilderWithRuntime",
+          "openclaw/plugin-sdk/session-store-runtime.readSessionUpdatedAt"
+        ],
+        "replacement": "Await readSessionUpdatedAtAsync, createChannelInboundEnvelopeBuilderAsync, or resolveInboundSessionEnvelopeContextAsync at each message's formatting boundary. Resolve routes through resolveAgentRoute and use dispatchInboundDirectDm. Retain the synchronous signatures and callback timing shipped in 2026.9.8 through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/compatibility-policy#inbound-envelope-timestamps",
+        "replacementExports": [
+          "readSessionUpdatedAtAsync",
+          "createChannelInboundEnvelopeBuilderAsync",
+          "resolveInboundSessionEnvelopeContextAsync",
+          "resolveAgentRoute",
+          "dispatchInboundDirectDm"
+        ]
+      },
+      {
+        "code": "channel-pairing-sync-allowlist",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/channel-pairing.readChannelAllowFromStoreSync"
+        ],
+        "replacement": "Await readChannelAllowFromStore from channel-pairing. The released synchronous reader retains its signature and native behavior through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/compatibility-policy#channel-pairing-allowlists",
+        "replacementExports": [
+          "readChannelAllowFromStore"
+        ]
+      },
+      {
+        "code": "debug-proxy-sync-capture",
+        "status": "deprecated",
+        "surfaces": [
+          "DebugProxyCaptureContext.captureWsEvent",
+          "openclaw/plugin-sdk/proxy-capture.DebugProxyCaptureReader",
+          "openclaw/plugin-sdk/proxy-capture.DebugProxyCaptureStore",
+          "openclaw/plugin-sdk/proxy-capture.acquireDebugProxyCaptureStore",
+          "openclaw/plugin-sdk/proxy-capture.captureHttpExchange",
+          "openclaw/plugin-sdk/proxy-capture.captureWsEvent",
+          "openclaw/plugin-sdk/proxy-capture.closeDebugProxyCaptureStore",
+          "openclaw/plugin-sdk/proxy-capture.createDebugProxyCaptureReader",
+          "openclaw/plugin-sdk/proxy-capture.finalizeDebugProxyCapture",
+          "openclaw/plugin-sdk/proxy-capture.getDebugProxyCaptureStore",
+          "openclaw/plugin-sdk/proxy-capture.initializeDebugProxyCapture"
+        ],
+        "replacement": "Acquire acquireDebugProxyCaptureStoreAsync, await store operations, and await lease.release in finally. Use createDebugProxyCaptureReaderAsync and await reads. Use initializeDebugProxyCaptureAsync, captureHttpExchangeAsync, captureWsEventAsync, and finalizeDebugProxyCaptureAsync, including the context captureWsEventAsync companion. Do not fire and forget persistence or fall back after an async failure.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-debug-proxy-capture",
+        "replacementExports": [
+          "acquireDebugProxyCaptureStoreAsync",
+          "createDebugProxyCaptureReaderAsync",
+          "initializeDebugProxyCaptureAsync",
+          "captureHttpExchangeAsync",
+          "captureWsEventAsync",
+          "finalizeDebugProxyCaptureAsync"
+        ]
+      },
+      {
+        "code": "reply-run-start-unprepared-transcript",
+        "status": "deprecated",
+        "surfaces": [
+          "PluginHookReplyDispatchContext.onAgentRunStart",
+          "openclaw/plugin-sdk/reply-runtime.GetReplyOptions.onAgentRunStart"
+        ],
+        "replacement": "Use onPreparedAgentRunStart with a required transcriptStart field, forwarding the complete notification and synchronous return value. Bundled runtimes prepare the facts asynchronously; retain the released onAgentRunStart callback and omitted-facts synchronous read through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/compatibility-policy#reply-run-start-transcript-facts",
+        "replacementExports": [
+          "onPreparedAgentRunStart",
+          "onAgentRunStart"
+        ]
+      },
+      {
+        "code": "runtime-config-sync-load",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/memory-core-host-runtime-core.getRuntimeConfig",
+          "openclaw/plugin-sdk/runtime-config-snapshot.getRuntimeConfig"
+        ],
+        "replacement": "Use readRuntimeConfig for the already prepared runtime snapshot. At a cold preparation boundary, await captureRuntimeConfigAsyncReader()() first or use its returned config. The released getRuntimeConfig keeps its synchronous cold-load behavior through 2026-12-31; removal ships in the first January 2027 stable release.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#read-prepared-runtime-config",
+        "replacementExports": [
+          "readRuntimeConfig",
+          "captureRuntimeConfigAsyncReader",
+          "getRuntimeConfig"
+        ]
+      },
+      {
+        "code": "session-observer-progress-sync-reads",
+        "status": "deprecated",
+        "surfaces": [
+          "GatewayRequestHandlerOptions.context.sessionObserver.dispose",
+          "GatewayRequestHandlerOptions.context.sessionObserver.getCompanionSnapshot",
+          "GatewayRequestHandlerOptions.context.sessionObserver.handleEvent",
+          "GetReplyOptions.onVerboseProgressVisibility",
+          "PluginHookReplyDispatchEvent.shouldSendFullToolDetails",
+          "PluginHookReplyDispatchEvent.shouldSendToolSummaries",
+          "tryDispatchAcpReplyHook boolean-only event inputs"
+        ],
+        "replacement": "Await sessionObserver.handleEventAsync, getCompanionSnapshotAsync, and disposeAsync. Use reply_dispatch shouldSendToolSummariesAsync/shouldSendFullToolDetailsAsync and onVerboseProgressVisibilityAsync. Retain synchronous contracts through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-session-observer-and-progress-visibility",
+        "replacementExports": [
+          "handleEventAsync",
+          "getCompanionSnapshotAsync",
+          "disposeAsync",
+          "shouldSendToolSummariesAsync",
+          "shouldSendFullToolDetailsAsync",
+          "onVerboseProgressVisibilityAsync"
+        ]
+      },
+      {
+        "code": "session-store-opaque-mutations",
+        "status": "deprecated",
+        "surfaces": [
+          "api.runtime.agent.session.patchSessionEntry",
+          "api.runtime.agent.session.updateSessionStoreEntry",
+          "api.runtime.channel.session.updateLastRoute.assertCommitAllowed",
+          "openclaw/plugin-sdk/session-store-runtime.patchSessionEntry",
+          "openclaw/plugin-sdk/session-store-runtime.updateLastRoute.assertCommitAllowed",
+          "openclaw/plugin-sdk/session-store-runtime.updateSessionStoreEntry"
+        ],
+        "replacement": "Use prepareSessionEntryPatch for host preparation followed by an exact-snapshot conditional commit, applySessionEntryPatch for data-only patches, and updateLastRouteWithAuthority for guarded route updates. Legacy opaque transaction guards retain their ordering and will be removed in the first January 2027 stable release after the final compatibility day, 2026-12-31.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#prepare-session-entry-changes",
+        "replacementExports": [
+          "prepareSessionEntryPatch",
+          "applySessionEntryPatch",
+          "updateLastRouteWithAuthority"
+        ]
+      },
+      {
+        "code": "session-store-sync-listing",
+        "status": "deprecated",
+        "surfaces": [
+          "api.runtime.agent.session.listSessionEntries",
+          "openclaw/plugin-sdk/session-store-runtime.listSessionEntries"
+        ],
+        "replacement": "Await listSessionEntriesAsync with an explicit agentId for read-only metadata; use getSessionEntryAsync for complete entries. Retain final deletion and disclosure authority at the effect boundary. The synchronous listing remains compatible through 2026-12-31.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-session-metadata-listings",
+        "replacementExports": [
+          "listSessionEntriesAsync",
+          "getSessionEntryAsync"
+        ]
+      },
+      {
+        "code": "session-store-sync-readers",
+        "status": "deprecated",
+        "surfaces": [
+          "api.runtime.agent.session.getConversationSession",
+          "api.runtime.agent.session.getSessionEntry",
+          "openclaw/plugin-sdk/session-store-runtime.getConversationSession",
+          "openclaw/plugin-sdk/session-store-runtime.getSessionEntry",
+          "openclaw/plugin-sdk/session-store-runtime.loadTranscriptEventsSync",
+          "openclaw/plugin-sdk/session-store-runtime.readAmbientTranscriptWatermark"
+        ],
+        "replacement": "Await getSessionEntryAsync, getConversationSessionAsync, readAmbientTranscriptWatermarkAsync, and loadTranscriptEvents. Synchronous readers retain their results during the stable deprecation period. Current entry lookup is not a substitute for historical transcript-key resolution.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-session-and-transcript-readers",
+        "replacementExports": [
+          "getSessionEntryAsync",
+          "getConversationSessionAsync",
+          "readAmbientTranscriptWatermarkAsync",
+          "loadTranscriptEvents"
+        ]
+      },
+      {
+        "code": "skill-command-discovery-sync",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/command-auth-native.listSkillCommandsForAgents",
+          "openclaw/plugin-sdk/skill-commands-runtime.listSkillCommandsForAgents",
+          "openclaw/plugin-sdk/skill-commands-runtime.listSkillCommandsForWorkspace"
+        ],
+        "replacement": "Await prepareSkillCommandsForAgents or prepareSkillCommandsForWorkspace. Synchronous list methods retain their array results through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#await-skill-command-discovery",
+        "replacementExports": [
+          "prepareSkillCommandsForAgents",
+          "prepareSkillCommandsForWorkspace"
+        ]
+      },
+      {
+        "code": "transcript-session-key-sync-resolution",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/session-store-runtime.resolveTranscriptSessionKeyBySessionId"
+        ],
+        "replacement": "Await resolveTranscriptSessionKeyBySessionIdAsync from session-store-runtime. It preserves exact historical session-window resolution, including session IDs no longer selected by the current entry.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/async-transcript-and-tts",
+        "replacementExports": [
+          "resolveTranscriptSessionKeyBySessionIdAsync"
+        ]
+      },
+      {
+        "code": "tts-preferences-sync-resolution",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/agent-runtime resolveTtsPrefsPath",
+          "openclaw/plugin-sdk/tts-runtime buildTtsSystemPromptHint",
+          "openclaw/plugin-sdk/tts-runtime resolveTtsPrefsPath"
+        ],
+        "replacement": "Await resolveTtsPrefsPathAsync(config) for the machine-owned path. For prompt hints, await the public api.runtime.tts.buildSystemPromptHintAsync method. Bundled plugins can also await private prepareTtsPreferences and pass preparedTtsPreferences to the supported synchronous hint overload. The unprepared synchronous hint and preference-path calls remain compatible through 2026-12-31; removal ships in the first January 2027 stable release.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/async-transcript-and-tts",
+        "replacementExports": [
+          "resolveTtsPrefsPathAsync",
+          "buildSystemPromptHintAsync"
+        ]
+      },
+      {
+        "code": "watched-sessions-sync-harness-context",
+        "status": "deprecated",
+        "surfaces": [
+          "openclaw/plugin-sdk/agent-harness-runtime.buildWatchedSessionsHarnessContext"
+        ],
+        "replacement": "Await prepareWatchedSessionsHarnessContext with an assertCurrent callback bound to the current host capability. The released buildWatchedSessionsHarnessContext retains its synchronous string-or-undefined result through 2026-12-31; removal ships in the first January 2027 stable release without an SDK major.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/compatibility-policy#watched-session-harness-context",
+        "replacementExports": [
+          "prepareWatchedSessionsHarnessContext",
+          "buildWatchedSessionsHarnessContext"
+        ]
+      },
+      {
+        "code": "web-search-sync-provider-list",
+        "status": "deprecated",
+        "surfaces": [
+          "PluginRuntime.webSearch.listProviders"
+        ],
+        "replacement": "Await runtime.webSearch.listProvidersAsync(params). The synchronous listProviders(params) retains its return shape through 2026-12-31; removal ships in the first January 2027 stable release.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/compatibility-policy#web-search-provider-lists",
+        "replacementExports": [
+          "listProvidersAsync",
+          "listProviders"
+        ]
+      },
+      {
+        "code": "workspace-mutation-guard-callback",
+        "status": "deprecated",
+        "surfaces": [
+          "api.runtime.agent.ensureAgentWorkspace.beforePersistentApply"
+        ],
+        "replacement": "Await database preparation before ensureAgentWorkspace and use SQL-free guard.assertHost for live authority. Internal recovery predicates run on the worker transaction connection.",
+        "removeAfter": "2026-12-31",
+        "docsPath": "/plugins/sdk-migration/how-to-migrate#workspace-mutation-guards",
+        "replacementExports": [
+          "ensureAgentWorkspace"
+        ]
+      }
+    ],
+    "compatDeprecationsSource": {
+      "repository": "openclaw/openclaw",
+      "commit": "c525b86a79b07070b67feca692bf1a6c49c933a0"
+    },
+    "compatRecordTests": {},
+    "compatRecordMissingTests": {},
+    "hookTypesPath": "dist/config-contracts-BhONpkDo.d.ts",
+    "hookNameCount": 0,
+    "hookNames": [],
+    "apiBuilderPath": "dist/config-contracts-BhONpkDo.d.ts",
+    "apiRegistrarCount": 54,
+    "apiRegistrars": [
+      "registerAgentEventSubscription",
+      "registerAgentHarness",
+      "registerAgentToolResultMiddleware",
+      "registerAutoEnableProbe",
+      "registerChannel",
+      "registerCli",
+      "registerCliBackend",
+      "registerCommand",
+      "registerCompactionProvider",
+      "registerConfigMigration",
+      "registerContextEngine",
+      "registerControlUiDescriptor",
+      "registerDecisionProvider",
+      "registerEmbeddingProvider",
+      "registerGatewayAccessPolicy",
+      "registerGatewayDiscoveryService",
+      "registerGatewayMethod",
+      "registerHook",
+      "registerHttpRoute",
+      "registerImageGenerationProvider",
+      "registerInteractiveHandler",
+      "registerMcpServerConnectionResolver",
+      "registerMediaUnderstandingProvider",
+      "registerMemoryCapability",
+      "registerMemoryCorpusSupplement",
+      "registerMemoryPromptPreparation",
+      "registerMemoryPromptSupplement",
+      "registerMigrationProvider",
+      "registerModelCatalogProvider",
+      "registerMusicGenerationProvider",
+      "registerNodeCliFeature",
+      "registerNodeHostCommand",
+      "registerNodeInvokePolicy",
+      "registerProvider",
+      "registerRealtimeTranscriptionProvider",
+      "registerRealtimeVoiceProvider",
+      "registerReload",
+      "registerRuntimeLifecycle",
+      "registerSecurityAuditCollector",
+      "registerService",
+      "registerSessionCatalog",
+      "registerSessionExtension",
+      "registerSessionSchedulerJob",
+      "registerSpeechProvider",
+      "registerStorageProvider",
+      "registerTool",
+      "registerToolMetadata",
+      "registerTranscriptSourceProvider",
+      "registerTrustedToolPolicy",
+      "registerVideoGenerationProvider",
+      "registerWebFetchProvider",
+      "registerWebSearchProvider",
+      "registerWidgetPresenter",
+      "registerWorkerProvider"
+    ],
+    "capturedRegistrationPath": "dist/config-contracts-BhONpkDo.d.ts",
+    "capturedRegistrarCount": 54,
+    "capturedRegistrars": [
+      "registerAgentEventSubscription",
+      "registerAgentHarness",
+      "registerAgentToolResultMiddleware",
+      "registerAutoEnableProbe",
+      "registerChannel",
+      "registerCli",
+      "registerCliBackend",
+      "registerCommand",
+      "registerCompactionProvider",
+      "registerConfigMigration",
+      "registerContextEngine",
+      "registerControlUiDescriptor",
+      "registerDecisionProvider",
+      "registerEmbeddingProvider",
+      "registerGatewayAccessPolicy",
+      "registerGatewayDiscoveryService",
+      "registerGatewayMethod",
+      "registerHook",
+      "registerHttpRoute",
+      "registerImageGenerationProvider",
+      "registerInteractiveHandler",
+      "registerMcpServerConnectionResolver",
+      "registerMediaUnderstandingProvider",
+      "registerMemoryCapability",
+      "registerMemoryCorpusSupplement",
+      "registerMemoryPromptPreparation",
+      "registerMemoryPromptSupplement",
+      "registerMigrationProvider",
+      "registerModelCatalogProvider",
+      "registerMusicGenerationProvider",
+      "registerNodeCliFeature",
+      "registerNodeHostCommand",
+      "registerNodeInvokePolicy",
+      "registerProvider",
+      "registerRealtimeTranscriptionProvider",
+      "registerRealtimeVoiceProvider",
+      "registerReload",
+      "registerRuntimeLifecycle",
+      "registerSecurityAuditCollector",
+      "registerService",
+      "registerSessionCatalog",
+      "registerSessionExtension",
+      "registerSessionSchedulerJob",
+      "registerSpeechProvider",
+      "registerStorageProvider",
+      "registerTool",
+      "registerToolMetadata",
+      "registerTranscriptSourceProvider",
+      "registerTrustedToolPolicy",
+      "registerVideoGenerationProvider",
+      "registerWebFetchProvider",
+      "registerWebSearchProvider",
+      "registerWidgetPresenter",
+      "registerWorkerProvider"
+    ],
+    "packagePath": "package.json",
+    "sdkExportCount": 361,
+    "sdkExports": [
+      "openclaw/plugin-sdk/access-groups",
+      "openclaw/plugin-sdk/account-core",
+      "openclaw/plugin-sdk/account-helpers",
+      "openclaw/plugin-sdk/account-id",
+      "openclaw/plugin-sdk/account-resolution",
+      "openclaw/plugin-sdk/account-resolution-runtime",
+      "openclaw/plugin-sdk/acp-binding-resolve-runtime",
+      "openclaw/plugin-sdk/acp-binding-runtime",
+      "openclaw/plugin-sdk/acp-runtime",
+      "openclaw/plugin-sdk/acp-runtime-backend",
+      "openclaw/plugin-sdk/agent-core",
+      "openclaw/plugin-sdk/agent-harness",
+      "openclaw/plugin-sdk/agent-harness-attempt-runtime",
+      "openclaw/plugin-sdk/agent-harness-completion",
+      "openclaw/plugin-sdk/agent-harness-exec-review-runtime",
+      "openclaw/plugin-sdk/agent-harness-registration",
+      "openclaw/plugin-sdk/agent-harness-runtime",
+      "openclaw/plugin-sdk/agent-harness-session-runtime",
+      "openclaw/plugin-sdk/agent-harness-tool-runtime",
+      "openclaw/plugin-sdk/agent-media-payload",
+      "openclaw/plugin-sdk/agent-runtime",
+      "openclaw/plugin-sdk/agent-scope-runtime",
+      "openclaw/plugin-sdk/agent-sessions",
+      "openclaw/plugin-sdk/agent-workspace-runtime",
+      "openclaw/plugin-sdk/allow-from",
+      "openclaw/plugin-sdk/allowlist-config-edit",
+      "openclaw/plugin-sdk/approval-auth-runtime",
+      "openclaw/plugin-sdk/approval-client-runtime",
+      "openclaw/plugin-sdk/approval-delivery-runtime",
+      "openclaw/plugin-sdk/approval-gateway-runtime",
+      "openclaw/plugin-sdk/approval-handler-adapter-runtime",
+      "openclaw/plugin-sdk/approval-handler-runtime",
+      "openclaw/plugin-sdk/approval-native-runtime",
+      "openclaw/plugin-sdk/approval-reaction-runtime",
+      "openclaw/plugin-sdk/approval-reference-runtime",
+      "openclaw/plugin-sdk/approval-reply-runtime",
+      "openclaw/plugin-sdk/approval-runtime",
+      "openclaw/plugin-sdk/archive",
+      "openclaw/plugin-sdk/async-lock-runtime",
+      "openclaw/plugin-sdk/blob-runtime",
+      "openclaw/plugin-sdk/boolean-param",
+      "openclaw/plugin-sdk/browser-cdp",
+      "openclaw/plugin-sdk/browser-config",
+      "openclaw/plugin-sdk/bundled-channel-config-schema",
+      "openclaw/plugin-sdk/channel-actions",
+      "openclaw/plugin-sdk/channel-activity-runtime",
+      "openclaw/plugin-sdk/channel-config-helpers",
+      "openclaw/plugin-sdk/channel-config-primitives",
+      "openclaw/plugin-sdk/channel-config-schema",
+      "openclaw/plugin-sdk/channel-config-ui-hints",
+      "openclaw/plugin-sdk/channel-config-writes",
+      "openclaw/plugin-sdk/channel-contract",
+      "openclaw/plugin-sdk/channel-core",
+      "openclaw/plugin-sdk/channel-dm-policy",
+      "openclaw/plugin-sdk/channel-entry-contract",
+      "openclaw/plugin-sdk/channel-feedback",
+      "openclaw/plugin-sdk/channel-inbound",
+      "openclaw/plugin-sdk/channel-inbound-debounce",
+      "openclaw/plugin-sdk/channel-ingress-runtime",
+      "openclaw/plugin-sdk/channel-join-intro-runtime",
+      "openclaw/plugin-sdk/channel-mention-gating",
+      "openclaw/plugin-sdk/channel-outbound",
+      "openclaw/plugin-sdk/channel-pairing",
+      "openclaw/plugin-sdk/channel-plugin-common",
+      "openclaw/plugin-sdk/channel-policy",
+      "openclaw/plugin-sdk/channel-route",
+      "openclaw/plugin-sdk/channel-runtime-context",
+      "openclaw/plugin-sdk/channel-secret-basic-runtime",
+      "openclaw/plugin-sdk/channel-secret-owner-runtime",
+      "openclaw/plugin-sdk/channel-secret-tts-runtime",
+      "openclaw/plugin-sdk/channel-send-result",
+      "openclaw/plugin-sdk/channel-setup",
+      "openclaw/plugin-sdk/channel-status",
+      "openclaw/plugin-sdk/channel-streaming-config",
+      "openclaw/plugin-sdk/channel-targets",
+      "openclaw/plugin-sdk/chat-channel-ids",
+      "openclaw/plugin-sdk/claude-model-runtime",
+      "openclaw/plugin-sdk/cli-argv",
+      "openclaw/plugin-sdk/cli-backend",
+      "openclaw/plugin-sdk/cli-runtime",
+      "openclaw/plugin-sdk/cli-state-owner",
+      "openclaw/plugin-sdk/code-mode-executor-runtime",
+      "openclaw/plugin-sdk/codex-mcp-projection",
+      "openclaw/plugin-sdk/codex-session-transcript-runtime",
+      "openclaw/plugin-sdk/collection-input-runtime",
+      "openclaw/plugin-sdk/collection-runtime",
+      "openclaw/plugin-sdk/command-auth-native",
+      "openclaw/plugin-sdk/command-detection",
+      "openclaw/plugin-sdk/command-primitives-runtime",
+      "openclaw/plugin-sdk/command-status",
+      "openclaw/plugin-sdk/command-status-runtime",
+      "openclaw/plugin-sdk/command-surface",
+      "openclaw/plugin-sdk/computer-use",
+      "openclaw/plugin-sdk/concurrency-runtime",
+      "openclaw/plugin-sdk/config-contracts",
+      "openclaw/plugin-sdk/config-mutation",
+      "openclaw/plugin-sdk/context-engine-transcript-runtime",
+      "openclaw/plugin-sdk/context-visibility-runtime",
+      "openclaw/plugin-sdk/control-ui",
+      "openclaw/plugin-sdk/control-ui-link-reader",
+      "openclaw/plugin-sdk/conversation-binding-inspection-runtime",
+      "openclaw/plugin-sdk/conversation-binding-runtime",
+      "openclaw/plugin-sdk/conversation-runtime",
+      "openclaw/plugin-sdk/core",
+      "openclaw/plugin-sdk/cron-store-runtime",
+      "openclaw/plugin-sdk/dangerous-name-runtime",
+      "openclaw/plugin-sdk/database-engine-runtime",
+      "openclaw/plugin-sdk/database-engine-worker-runtime",
+      "openclaw/plugin-sdk/decisions",
+      "openclaw/plugin-sdk/decisions-openai-runtime",
+      "openclaw/plugin-sdk/dedupe-runtime",
+      "openclaw/plugin-sdk/delivery-queue-runtime",
+      "openclaw/plugin-sdk/device-bootstrap",
+      "openclaw/plugin-sdk/diagnostic-flags",
+      "openclaw/plugin-sdk/diagnostic-runtime",
+      "openclaw/plugin-sdk/direct-dm-guard-policy",
+      "openclaw/plugin-sdk/directory-config-runtime",
+      "openclaw/plugin-sdk/directory-runtime",
+      "openclaw/plugin-sdk/doctor-repair-runtime",
+      "openclaw/plugin-sdk/document-extractor",
+      "openclaw/plugin-sdk/embedding-provider-adapter",
+      "openclaw/plugin-sdk/embedding-provider-runtime-contract",
+      "openclaw/plugin-sdk/embedding-providers",
+      "openclaw/plugin-sdk/error-runtime",
+      "openclaw/plugin-sdk/exec-approvals-runtime",
+      "openclaw/plugin-sdk/expect-runtime",
+      "openclaw/plugin-sdk/extension-shared",
+      "openclaw/plugin-sdk/feature-contract",
+      "openclaw/plugin-sdk/feature-plugin",
+      "openclaw/plugin-sdk/fetch-runtime",
+      "openclaw/plugin-sdk/file-access-runtime",
+      "openclaw/plugin-sdk/file-lock",
+      "openclaw/plugin-sdk/gateway-config-runtime",
+      "openclaw/plugin-sdk/gateway-ingress",
+      "openclaw/plugin-sdk/gateway-method-runtime",
+      "openclaw/plugin-sdk/gateway-runtime",
+      "openclaw/plugin-sdk/global-singleton",
+      "openclaw/plugin-sdk/group-activation",
+      "openclaw/plugin-sdk/health",
+      "openclaw/plugin-sdk/hook-runtime",
+      "openclaw/plugin-sdk/host-runtime",
+      "openclaw/plugin-sdk/html-entity-runtime",
+      "openclaw/plugin-sdk/http-response-runtime",
+      "openclaw/plugin-sdk/image-generation",
+      "openclaw/plugin-sdk/image-generation-core",
+      "openclaw/plugin-sdk/image-generation-runtime",
+      "openclaw/plugin-sdk/inbound-envelope",
+      "openclaw/plugin-sdk/inbound-event-delivery",
+      "openclaw/plugin-sdk/inbound-reply-dispatch",
+      "openclaw/plugin-sdk/ingress-effect-once",
+      "openclaw/plugin-sdk/inline-image-data-url-runtime",
+      "openclaw/plugin-sdk/interactive-runtime",
+      "openclaw/plugin-sdk/json-schema-runtime",
+      "openclaw/plugin-sdk/json-schema-validator",
+      "openclaw/plugin-sdk/json-store",
+      "openclaw/plugin-sdk/json-unsafe-integers",
+      "openclaw/plugin-sdk/keyed-async-queue",
+      "openclaw/plugin-sdk/lazy-runtime",
+      "openclaw/plugin-sdk/llm",
+      "openclaw/plugin-sdk/logging-core",
+      "openclaw/plugin-sdk/markdown-table-runtime",
+      "openclaw/plugin-sdk/media-ffmpeg",
+      "openclaw/plugin-sdk/media-generation-runtime",
+      "openclaw/plugin-sdk/media-local-roots",
+      "openclaw/plugin-sdk/media-mime",
+      "openclaw/plugin-sdk/media-runtime",
+      "openclaw/plugin-sdk/media-store",
+      "openclaw/plugin-sdk/media-understanding",
+      "openclaw/plugin-sdk/media-understanding-runtime",
+      "openclaw/plugin-sdk/meeting-config",
+      "openclaw/plugin-sdk/meeting-page-script-runtime",
+      "openclaw/plugin-sdk/meeting-runtime",
+      "openclaw/plugin-sdk/memory-core-host-embedding-registry",
+      "openclaw/plugin-sdk/memory-core-host-engine-curated",
+      "openclaw/plugin-sdk/memory-core-host-engine-embeddings",
+      "openclaw/plugin-sdk/memory-core-host-engine-foundation",
+      "openclaw/plugin-sdk/memory-core-host-engine-fs",
+      "openclaw/plugin-sdk/memory-core-host-engine-indexing",
+      "openclaw/plugin-sdk/memory-core-host-engine-knn",
+      "openclaw/plugin-sdk/memory-core-host-engine-schema",
+      "openclaw/plugin-sdk/memory-core-host-engine-sessions",
+      "openclaw/plugin-sdk/memory-core-host-engine-storage",
+      "openclaw/plugin-sdk/memory-core-host-runtime-cli",
+      "openclaw/plugin-sdk/memory-core-host-runtime-core",
+      "openclaw/plugin-sdk/memory-core-host-runtime-files",
+      "openclaw/plugin-sdk/memory-core-host-secret",
+      "openclaw/plugin-sdk/memory-core-host-status",
+      "openclaw/plugin-sdk/memory-core-host-transcript-stats",
+      "openclaw/plugin-sdk/memory-host-core",
+      "openclaw/plugin-sdk/memory-host-events",
+      "openclaw/plugin-sdk/memory-host-markdown",
+      "openclaw/plugin-sdk/memory-host-search",
+      "openclaw/plugin-sdk/message-tool-delivery-hints",
+      "openclaw/plugin-sdk/migration",
+      "openclaw/plugin-sdk/migration-runtime",
+      "openclaw/plugin-sdk/model-catalog-pricing",
+      "openclaw/plugin-sdk/model-ref-parse",
+      "openclaw/plugin-sdk/model-session-runtime",
+      "openclaw/plugin-sdk/models-provider-runtime",
+      "openclaw/plugin-sdk/music-generation",
+      "openclaw/plugin-sdk/native-command-config-runtime",
+      "openclaw/plugin-sdk/native-command-registry",
+      "openclaw/plugin-sdk/native-hook-relay-runtime",
+      "openclaw/plugin-sdk/node-cli-runtime",
+      "openclaw/plugin-sdk/node-crypto-runtime",
+      "openclaw/plugin-sdk/node-host",
+      "openclaw/plugin-sdk/node-selection-runtime",
+      "openclaw/plugin-sdk/number-runtime",
+      "openclaw/plugin-sdk/outbound-echo-runtime",
+      "openclaw/plugin-sdk/outbound-media",
+      "openclaw/plugin-sdk/pair-loop-guard-runtime",
+      "openclaw/plugin-sdk/param-readers",
+      "openclaw/plugin-sdk/path-existence-runtime",
+      "openclaw/plugin-sdk/persistent-dedupe",
+      "openclaw/plugin-sdk/plugin-command-runtime",
+      "openclaw/plugin-sdk/plugin-config-runtime",
+      "openclaw/plugin-sdk/plugin-entry",
+      "openclaw/plugin-sdk/plugin-runtime",
+      "openclaw/plugin-sdk/plugin-state-runtime",
+      "openclaw/plugin-sdk/plugin-state-store-runtime",
+      "openclaw/plugin-sdk/poll-runtime",
+      "openclaw/plugin-sdk/process-runtime",
+      "openclaw/plugin-sdk/provider-auth",
+      "openclaw/plugin-sdk/provider-auth-aliases",
+      "openclaw/plugin-sdk/provider-auth-api-key",
+      "openclaw/plugin-sdk/provider-auth-login-flow-runtime",
+      "openclaw/plugin-sdk/provider-auth-markers",
+      "openclaw/plugin-sdk/provider-auth-result",
+      "openclaw/plugin-sdk/provider-auth-runtime",
+      "openclaw/plugin-sdk/provider-binary-stream",
+      "openclaw/plugin-sdk/provider-catalog-live-runtime",
+      "openclaw/plugin-sdk/provider-catalog-runtime",
+      "openclaw/plugin-sdk/provider-catalog-shared",
+      "openclaw/plugin-sdk/provider-entry",
+      "openclaw/plugin-sdk/provider-env-vars",
+      "openclaw/plugin-sdk/provider-http",
+      "openclaw/plugin-sdk/provider-model-metadata",
+      "openclaw/plugin-sdk/provider-model-shared",
+      "openclaw/plugin-sdk/provider-model-types",
+      "openclaw/plugin-sdk/provider-oauth-runtime",
+      "openclaw/plugin-sdk/provider-onboard",
+      "openclaw/plugin-sdk/provider-request-headers",
+      "openclaw/plugin-sdk/provider-selection-runtime",
+      "openclaw/plugin-sdk/provider-setup",
+      "openclaw/plugin-sdk/provider-stream",
+      "openclaw/plugin-sdk/provider-stream-family",
+      "openclaw/plugin-sdk/provider-stream-shared",
+      "openclaw/plugin-sdk/provider-thinking-runtime",
+      "openclaw/plugin-sdk/provider-tools",
+      "openclaw/plugin-sdk/provider-transport-runtime",
+      "openclaw/plugin-sdk/provider-usage",
+      "openclaw/plugin-sdk/provider-web-fetch",
+      "openclaw/plugin-sdk/provider-web-fetch-contract",
+      "openclaw/plugin-sdk/provider-web-search",
+      "openclaw/plugin-sdk/provider-web-search-config-contract",
+      "openclaw/plugin-sdk/provider-web-search-contract",
+      "openclaw/plugin-sdk/proxy-capture",
+      "openclaw/plugin-sdk/qa-runner-runtime",
+      "openclaw/plugin-sdk/question-gateway-runtime",
+      "openclaw/plugin-sdk/realtime-bootstrap-context",
+      "openclaw/plugin-sdk/realtime-transcription",
+      "openclaw/plugin-sdk/realtime-transcription-provider",
+      "openclaw/plugin-sdk/realtime-transcription-session",
+      "openclaw/plugin-sdk/realtime-voice",
+      "openclaw/plugin-sdk/realtime-voice-activation",
+      "openclaw/plugin-sdk/realtime-voice-audio-queue",
+      "openclaw/plugin-sdk/realtime-voice-playback",
+      "openclaw/plugin-sdk/realtime-voice-provider",
+      "openclaw/plugin-sdk/reply-chunking",
+      "openclaw/plugin-sdk/reply-dispatch-runtime",
+      "openclaw/plugin-sdk/reply-history",
+      "openclaw/plugin-sdk/reply-payload",
+      "openclaw/plugin-sdk/reply-reference",
+      "openclaw/plugin-sdk/reply-runtime",
+      "openclaw/plugin-sdk/request-url",
+      "openclaw/plugin-sdk/response-limit-runtime",
+      "openclaw/plugin-sdk/retry-runtime",
+      "openclaw/plugin-sdk/root-walk",
+      "openclaw/plugin-sdk/routing",
+      "openclaw/plugin-sdk/run-command",
+      "openclaw/plugin-sdk/runtime",
+      "openclaw/plugin-sdk/runtime-config-snapshot",
+      "openclaw/plugin-sdk/runtime-doctor",
+      "openclaw/plugin-sdk/runtime-doctor-migrations",
+      "openclaw/plugin-sdk/runtime-env",
+      "openclaw/plugin-sdk/runtime-fetch",
+      "openclaw/plugin-sdk/runtime-group-policy",
+      "openclaw/plugin-sdk/runtime-profile",
+      "openclaw/plugin-sdk/runtime-store",
+      "openclaw/plugin-sdk/sandbox",
+      "openclaw/plugin-sdk/secret-egress-runtime",
+      "openclaw/plugin-sdk/secret-file",
+      "openclaw/plugin-sdk/secret-file-runtime",
+      "openclaw/plugin-sdk/secret-input",
+      "openclaw/plugin-sdk/secret-input-runtime",
+      "openclaw/plugin-sdk/secret-provider-alias",
+      "openclaw/plugin-sdk/secret-ref-readonly",
+      "openclaw/plugin-sdk/secret-ref-runtime",
+      "openclaw/plugin-sdk/secure-random-runtime",
+      "openclaw/plugin-sdk/security-runtime",
+      "openclaw/plugin-sdk/session-binding-runtime",
+      "openclaw/plugin-sdk/session-catalog",
+      "openclaw/plugin-sdk/session-catalog-paging",
+      "openclaw/plugin-sdk/session-catalog-runtime",
+      "openclaw/plugin-sdk/session-discussion",
+      "openclaw/plugin-sdk/session-key-runtime",
+      "openclaw/plugin-sdk/session-store-paths",
+      "openclaw/plugin-sdk/session-store-runtime",
+      "openclaw/plugin-sdk/session-transcript-hit",
+      "openclaw/plugin-sdk/session-transcript-runtime",
+      "openclaw/plugin-sdk/session-visibility",
+      "openclaw/plugin-sdk/setup",
+      "openclaw/plugin-sdk/setup-runtime",
+      "openclaw/plugin-sdk/setup-tools",
+      "openclaw/plugin-sdk/simple-completion-runtime",
+      "openclaw/plugin-sdk/skill-commands-runtime",
+      "openclaw/plugin-sdk/speech",
+      "openclaw/plugin-sdk/speech-core",
+      "openclaw/plugin-sdk/speech-provider",
+      "openclaw/plugin-sdk/speech-settings",
+      "openclaw/plugin-sdk/sqlite-runtime",
+      "openclaw/plugin-sdk/sqlite-worker-runtime",
+      "openclaw/plugin-sdk/ssrf-dispatcher",
+      "openclaw/plugin-sdk/ssrf-policy",
+      "openclaw/plugin-sdk/ssrf-runtime",
+      "openclaw/plugin-sdk/ssrf-runtime-internal",
+      "openclaw/plugin-sdk/state-paths",
+      "openclaw/plugin-sdk/status-helpers",
+      "openclaw/plugin-sdk/string-coerce-runtime",
+      "openclaw/plugin-sdk/string-normalization-runtime",
+      "openclaw/plugin-sdk/system-event-runtime",
+      "openclaw/plugin-sdk/talk-config-runtime",
+      "openclaw/plugin-sdk/target-resolver-runtime",
+      "openclaw/plugin-sdk/temp-path",
+      "openclaw/plugin-sdk/terminal-safe-text",
+      "openclaw/plugin-sdk/text-autolink-runtime",
+      "openclaw/plugin-sdk/text-chunking",
+      "openclaw/plugin-sdk/text-grapheme",
+      "openclaw/plugin-sdk/text-utility-runtime",
+      "openclaw/plugin-sdk/thread-bindings-runtime",
+      "openclaw/plugin-sdk/thread-bindings-session-runtime",
+      "openclaw/plugin-sdk/time-runtime",
+      "openclaw/plugin-sdk/tool-payload",
+      "openclaw/plugin-sdk/tool-plugin",
+      "openclaw/plugin-sdk/tool-results",
+      "openclaw/plugin-sdk/tool-send",
+      "openclaw/plugin-sdk/transcripts",
+      "openclaw/plugin-sdk/transport-ready-runtime",
+      "openclaw/plugin-sdk/tts-runtime",
+      "openclaw/plugin-sdk/types",
+      "openclaw/plugin-sdk/video-generation",
+      "openclaw/plugin-sdk/video-generation-runtime",
+      "openclaw/plugin-sdk/web-content-extractor",
+      "openclaw/plugin-sdk/web-media",
+      "openclaw/plugin-sdk/webhook-ingress",
+      "openclaw/plugin-sdk/webhook-request-guards",
+      "openclaw/plugin-sdk/webhook-targets",
+      "openclaw/plugin-sdk/websocket-runtime",
+      "openclaw/plugin-sdk/widget-html",
+      "openclaw/plugin-sdk/windows-spawn",
+      "openclaw/plugin-sdk/worker-task-server"
+    ],
+    "privateLocalSdkExportCount": 0,
+    "privateLocalSdkExports": [],
+    "pluginSdkEntrypointsPath": null,
+    "reservedSdkExportCount": 0,
+    "reservedSdkExports": [],
+    "reservedSdkExportOwners": {},
+    "supportedFacadeSdkExports": [],
+    "publicPluginOwnedSdkExports": [],
+    "manifestTypesPath": "dist/types-D3g9JHH2.d.ts",
+    "manifestFieldCount": 61,
+    "manifestFields": [
+      "activation",
+      "autoEnableWhenConfiguredProviders",
+      "backupResources",
+      "capabilityCatalogEntry",
+      "catalog",
+      "categories",
+      "channelAccountKeyPolicies",
+      "channelConfigs",
+      "channels",
+      "cliBackends",
+      "cliCommands",
+      "commandAliases",
+      "configContracts",
+      "configGroups",
+      "configSchema",
+      "contextEngineIds",
+      "contracts",
+      "controlUi",
+      "dashboard",
+      "decisionModels",
+      "description",
+      "doctorContract",
+      "doctorHealthChecks",
+      "enabledByDefault",
+      "enabledByDefaultOnPlatforms",
+      "id",
+      "imageGenerationProviderMetadata",
+      "kind",
+      "legacyPluginIds",
+      "managesOwnAvailability",
+      "mcpServers",
+      "mediaUnderstandingProviderMetadata",
+      "modelCatalog",
+      "modelIdNormalization",
+      "modelPricing",
+      "modelSupport",
+      "musicGenerationProviderMetadata",
+      "name",
+      "nonSecretAuthMarkers",
+      "providerAuthAliases",
+      "providerAuthChoices",
+      "providerCatalogEntry",
+      "providerEndpoints",
+      "providerRequest",
+      "providerUsageAuthEnvVars",
+      "providers",
+      "qaRunners",
+      "reload",
+      "requiresPlugins",
+      "secretProviderIntegrations",
+      "sessionRouteStateOwners",
+      "setup",
+      "skills",
+      "syntheticAuthRefs",
+      "themes",
+      "toolMetadata",
+      "transcriptSources",
+      "uiCapabilities",
+      "uiHints",
+      "version",
+      "videoGenerationProviderMetadata"
+    ],
+    "manifestContractFieldCount": 28,
+    "manifestContractFields": [
+      "agentToolResultMiddleware",
+      "codeModeExecutors",
+      "commandRuntimeCapabilities",
+      "decisionProviders",
+      "documentExtractors",
+      "embeddingProviders",
+      "externalAuthProviders",
+      "gatewayMethodDispatch",
+      "imageGenerationProviders",
+      "mediaUnderstandingProviders",
+      "migrationProviders",
+      "musicGenerationProviders",
+      "realtimeTranscriptionProviders",
+      "realtimeVoiceProviders",
+      "sessionScheduledTurns",
+      "speechProviders",
+      "storageProviders",
+      "subagentProfiles",
+      "tools",
+      "transcriptSourceProviders",
+      "trustedToolPolicies",
+      "usageProviders",
+      "videoGenerationProviders",
+      "webContentExtractors",
+      "webFetchProviders",
+      "webSearchProviders",
+      "workerProfileSuggestions",
+      "workerProviders"
+    ],
+    "requestedVersion": "latest",
+    "eligibilityVersion": "2026.11.7",
+    "source": {
+      "type": "npm",
+      "package": "openclaw",
+      "registry": "https://registry.npmjs.org",
+      "distTag": "latest",
+      "tarball": "https://registry.npmjs.org/openclaw/-/openclaw-2026.11.7.tgz",
+      "integrity": "sha512-6x49d02jEj8jjQAEkSZpyX8BCNnJLLCV3IHUTxQuN+OEJepo7RODk8JHURivefy+WZMqzvsyp+p8DlZUQnub6w==",
+      "shasum": "aa0bb5629abdac7278bda68d76ef63dfe6ceccec",
+      "repository": {
+        "url": "git+https://github.com/openclaw/openclaw.git",
+        "type": "git"
+      }
+    },
+    "cache": {
+      "hit": false,
+      "key": "2026.11.7-48d8465fb7e3"
+    }
+  },
+  "status": "pass",
+  "summary": {
+    "breakageCount": 0,
+    "warningCount": 0,
+    "deprecationWarningCount": 0,
+    "issueCount": 0
+  },
+  "fixtures": [
+    {
+      "id": "otto-wp-stack",
+      "name": "Otto WP Stack",
+      "priority": "high",
+      "seams": [
+        "dynamic-tool"
+      ],
+      "why": "local OpenClaw plugin root",
+      "status": "ok",
+      "hooks": [],
+      "hookDetails": [],
+      "registrations": [
+        "registerHttpRoute"
+      ],
+      "registrationDetails": [
+        {
+          "name": "registerHttpRoute",
+          "file": "dist/index.js",
+          "line": 290,
+          "ref": "dist/index.js:290"
+        },
+        {
+          "name": "registerHttpRoute",
+          "file": "src/index.ts",
+          "line": 325,
+          "ref": "src/index.ts:325"
+        }
+      ],
+      "manifestContracts": [
+        "tools"
+      ],
+      "manifestFiles": [
+        "openclaw.plugin.json"
+      ],
+      "sourceFiles": [
+        "dist/engine.js",
+        "dist/index.js",
+        "dist/stack.js",
+        "src/engine.ts",
+        "src/index.ts",
+        "src/stack.ts"
+      ],
+      "pluginManifests": [
+        {
+          "path": "openclaw.plugin.json",
+          "id": "otto-wp-stack",
+          "name": "Otto WP Stack",
+          "version": null,
+          "keys": [
+            "activation",
+            "categories",
+            "configSchema",
+            "contracts",
+            "description",
+            "id",
+            "name"
+          ],
+          "contracts": [
+            "tools"
+          ],
+          "providerAuthEnvVars": {},
+          "channelEnvVars": {},
+          "activation": {
+            "onStartup": true
+          }
+        }
+      ],
+      "securityManifests": [],
+      "package": {
+        "path": "package.json",
+        "name": "@lunarlyra/otto-wp-stack",
+        "version": "0.3.1",
+        "type": "module",
+        "main": "./dist/index.js",
+        "npmPack": {
+          "advertised": false,
+          "private": false,
+          "filesMode": "allowlist",
+          "files": [
+            "dist",
+            "openclaw.plugin.json",
+            "README.md"
+          ],
+          "invalidFileSpecs": []
+        },
+        "dependencies": [
+          "typebox"
+        ],
+        "peerDependencies": [
+          "openclaw"
+        ],
+        "optionalDependencies": [],
+        "openclaw": {
+          "extensions": [
+            "./dist/index.js"
+          ],
+          "runtimeExtensions": [],
+          "setupEntry": null,
+          "runtimeSetupEntry": null,
+          "compatPluginApi": ">=2026.11.3",
+          "buildOpenClawVersion": "2026.11.3",
+          "buildPluginSdkVersion": "2026.11.3",
+          "install": null,
+          "release": null,
+          "unsupportedMetadata": [],
+          "entrypoints": [
+            {
+              "kind": "extension",
+              "specifier": "./dist/index.js",
+              "relativePath": "dist/index.js",
+              "exists": true,
+              "requiresBuild": true
+            }
+          ]
+        }
+      },
+      "packages": [
+        {
+          "path": "package.json",
+          "name": "@lunarlyra/otto-wp-stack",
+          "version": "0.3.1",
+          "type": "module",
+          "main": "./dist/index.js",
+          "npmPack": {
+            "advertised": false,
+            "private": false,
+            "filesMode": "allowlist",
+            "files": [
+              "dist",
+              "openclaw.plugin.json",
+              "README.md"
+            ],
+            "invalidFileSpecs": []
+          },
+          "dependencies": [
+            "typebox"
+          ],
+          "peerDependencies": [
+            "openclaw"
+          ],
+          "optionalDependencies": [],
+          "openclaw": {
+            "extensions": [
+              "./dist/index.js"
+            ],
+            "runtimeExtensions": [],
+            "setupEntry": null,
+            "runtimeSetupEntry": null,
+            "compatPluginApi": ">=2026.11.3",
+            "buildOpenClawVersion": "2026.11.3",
+            "buildPluginSdkVersion": "2026.11.3",
+            "install": null,
+            "release": null,
+            "unsupportedMetadata": [],
+            "entrypoints": [
+              {
+                "kind": "extension",
+                "specifier": "./dist/index.js",
+                "relativePath": "dist/index.js",
+                "exists": true,
+                "requiresBuild": true
+              }
+            ]
+          }
+        }
+      ],
+      "sdkImports": [
+        "openclaw/plugin-sdk/feature-contract",
+        "openclaw/plugin-sdk/feature-plugin"
+      ],
+      "sdkImportDetails": [
+        {
+          "specifier": "openclaw/plugin-sdk/feature-contract",
+          "file": "dist/index.js",
+          "line": 29,
+          "ref": "dist/index.js:29"
+        },
+        {
+          "specifier": "openclaw/plugin-sdk/feature-contract",
+          "file": "src/index.ts",
+          "line": 31,
+          "ref": "src/index.ts:31"
+        },
+        {
+          "specifier": "openclaw/plugin-sdk/feature-plugin",
+          "file": "dist/index.js",
+          "line": 30,
+          "ref": "dist/index.js:30"
+        },
+        {
+          "specifier": "openclaw/plugin-sdk/feature-plugin",
+          "file": "src/index.ts",
+          "line": 32,
+          "ref": "src/index.ts:32"
+        }
+      ],
+      "sdkDeprecations": [],
+      "sdkUsage": {
+        "schemaVersion": 1,
+        "analysisVersion": "1",
+        "inputKind": "source",
+        "status": "complete",
+        "coverage": {
+          "filesDiscovered": 18,
+          "filesAnalyzed": 5,
+          "filesExcluded": 13
+        },
+        "entries": [
+          {
+            "key": "api-member:api.logger",
+            "kind": "api-member",
+            "identity": "api.logger",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 210,
+                "snippet": "const log = api.logger;"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.logger.info",
+            "kind": "api-member",
+            "identity": "api.logger.info",
+            "classification": "runtime",
+            "referenceKinds": [
+              "call"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 233,
+                "snippet": "log.info(`otto-wp-stack: minted HTTP API token at ${tokenFile} (owner-only file)`);"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 282,
+                "snippet": "log.info(\"otto-wp-stack: HTTP API token rotated\");"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.logger.warn",
+            "kind": "api-member",
+            "identity": "api.logger.warn",
+            "classification": "runtime",
+            "referenceKinds": [
+              "call"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 235,
+                "snippet": "log.warn(`otto-wp-stack: could not persist api token file: ${(e as Error).message}`);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig",
+            "kind": "api-member",
+            "identity": "api.pluginConfig",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 209,
+                "snippet": "const cfg = resolveConfig(api.pluginConfig as Partial<StackConfig> | undefined);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.apiToken",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.apiToken",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 215,
+                "snippet": "typeof api.pluginConfig?.apiToken === \"string\" && (api.pluginConfig.apiToken as string).length >= 16"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 216,
+                "snippet": "? (api.pluginConfig.apiToken as string)"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.credFile",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.credFile",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 98,
+                "snippet": "if (!c.credFile) c.credFile = path.join(c.stackRoot, \".db-credential\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 244,
+                "snippet": "dbCredential: isFile(cfg.credFile),"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 491,
+                "snippet": "if (!isFile(cfg.credFile)) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 501,
+                "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 530,
+                "snippet": "const j = JSON.parse(fs.readFileSync(cfg.credFile, \"utf8\"));"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.dbDir",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.dbDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 93,
+                "snippet": "if (!c.dbDir) c.dbDir = path.join(c.stackRoot, \"db\", \"data\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 176,
+                "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 460,
+                "snippet": "if (!fs.existsSync(path.join(cfg.dbDir, \"mysql\"))) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 474,
+                "snippet": "`--datadir=${cfg.dbDir}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 585,
+                "snippet": "if (!fs.existsSync(cfg.dbDir) || fs.readdirSync(cfg.dbDir).length === 0) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 594,
+                "snippet": "`--datadir=${cfg.dbDir}`,"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.dbHost",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.dbHost",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 488,
+                "snippet": "bootLog(cfg, `db: up on ${cfg.dbHost}:${cfg.dbPort}`);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 556,
+                "snippet": "`-h${cfg.dbHost}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 570,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 500))) return { up: false };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 574,
+                "snippet": "[mariadbBin(cfg, \"mariadb\"), \"--protocol=TCP\", `-h${cfg.dbHost}`, `-P${cfg.dbPort}`, `-u${cred.user}`, `-p${cred.password}`, \"-e\", \"SELECT VERSION()\"],"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 584,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 597,
+                "snippet": "`--bind-address=${cfg.dbHost}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 616,
+                "snippet": "if (await portOpen(cfg.dbHost, cfg.dbPort, 400)) return { ok: true, result: \"database started\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 633,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"already stopped\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 640,
+                "snippet": "`-h${cfg.dbHost}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 653,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"database stopped\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 862,
+                "snippet": "`--dbhost=${cfg.dbHost}:${cfg.dbPort}`,"
+              },
+              {
+                "path": "src/stack.ts",
+                "line": 170,
+                "snippet": "const dbUp = await portOpen(cfg.dbHost, cfg.dbPort, 500);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.dbPort",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.dbPort",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 488,
+                "snippet": "bootLog(cfg, `db: up on ${cfg.dbHost}:${cfg.dbPort}`);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 501,
+                "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 557,
+                "snippet": "`-P${cfg.dbPort}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 570,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 500))) return { up: false };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 574,
+                "snippet": "[mariadbBin(cfg, \"mariadb\"), \"--protocol=TCP\", `-h${cfg.dbHost}`, `-P${cfg.dbPort}`, `-u${cred.user}`, `-p${cred.password}`, \"-e\", \"SELECT VERSION()\"],"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 584,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 598,
+                "snippet": "`--port=${cfg.dbPort}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 616,
+                "snippet": "if (await portOpen(cfg.dbHost, cfg.dbPort, 400)) return { ok: true, result: \"database started\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 633,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"already stopped\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 641,
+                "snippet": "`-P${cfg.dbPort}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 653,
+                "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"database stopped\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 862,
+                "snippet": "`--dbhost=${cfg.dbHost}:${cfg.dbPort}`,"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.dbUser",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.dbUser",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 370,
+                "snippet": "if (!/^[A-Za-z0-9_]{1,32}$/.test(cfg.dbUser)) return bad(\"invalid dbUser config (letters, digits, underscore)\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 493,
+                "snippet": "bootLog(cfg, `db: creating user '${cfg.dbUser}' (grants limited to wps_% databases)…`);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 496,
+                "snippet": "`CREATE USER IF NOT EXISTS '${cfg.dbUser}'@'%' IDENTIFIED BY '${pass}';` +"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 497,
+                "snippet": "`GRANT ALL PRIVILEGES ON \\`wps\\_%\\`.* TO '${cfg.dbUser}'@'%';` +"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 501,
+                "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.logsDir",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.logsDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 95,
+                "snippet": "if (!c.logsDir) c.logsDir = path.join(c.stackRoot, \"logs\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 176,
+                "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 589,
+                "snippet": "const log = fs.openSync(path.join(cfg.logsDir, \"mariadb.log\"), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 601,
+                "snippet": "`--log-error=${path.join(cfg.logsDir, \"mariadb.log\")}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 623,
+                "snippet": "tail = fs.readFileSync(path.join(cfg.logsDir, \"mariadb.log\"), \"utf8\").split(\"\\n\").slice(-12).join(\" | \").slice(-400);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 712,
+                "snippet": "const fd = fs.openSync(path.join(cfg.logsDir, `${site.id}.log`), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.mariadbDir",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.mariadbDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 92,
+                "snippet": "if (!c.mariadbDir) c.mariadbDir = path.join(c.stackRoot, \"runtime\", \"mariadb\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 243,
+                "snippet": "mariadb: { installed: isFile(path.join(cfg.mariadbDir, \"bin\", \"mariadbd\")) },"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 255,
+                "snippet": "const r = await run([path.join(cfg.mariadbDir, \"bin\", \"mariadbd\"), \"--version\"], 10_000);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 452,
+                "snippet": "fs.mkdirSync(cfg.mariadbDir, { recursive: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 453,
+                "snippet": "const x = await run([\"tar\", \"-xzf\", path.join(tmp, \"db.tgz\"), \"-C\", cfg.mariadbDir, \"--strip-components=1\"], 1_200_000);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 471,
+                "snippet": "path.join(cfg.mariadbDir, \"scripts\", \"mariadb-install-db\"),"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 473,
+                "snippet": "`--basedir=${cfg.mariadbDir}`,"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 541,
+                "snippet": "return path.join(cfg.mariadbDir, \"bin\", name);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.phpBin",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.phpBin",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 90,
+                "snippet": "if (!c.phpBin) c.phpBin = path.join(c.stackRoot, \"runtime\", \"php\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 138,
+                "snippet": "const [cmd, ...args] = argv;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 241,
+                "snippet": "php: { installed: isFile(cfg.phpBin) },"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 247,
+                "snippet": "const r = await run([cfg.phpBin, \"-v\"], 10_000);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 332,
+                "snippet": "if (!isFile(cfg.phpBin)) return false;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 333,
+                "snippet": "return (await run([cfg.phpBin, \"-v\"], 10_000)).code === 0;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 338,
+                "snippet": "return (await run([cfg.phpBin, cfg.wpCli, \"--version\", \"--allow-root\"], 60_000)).code === 0;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 419,
+                "snippet": "fs.copyFileSync(found, cfg.phpBin + \".part\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 420,
+                "snippet": "fs.chmodSync(cfg.phpBin + \".part\", 0o755);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 421,
+                "snippet": "fs.renameSync(cfg.phpBin + \".part\", cfg.phpBin);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 664,
+                "snippet": "return run([cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${docroot}`, \"--skip-plugins\", \"--skip-themes\", ...args], timeoutMs);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 672,
+                "snippet": "phpReal = fs.realpathSync(cfg.phpBin);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.portMax",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.portMax",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 218,
+                "snippet": "for (let p = cfg.portMin; p <= cfg.portMax; p++) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 826,
+                "snippet": "if (!port) return bad(`no free port in ${cfg.portMin}-${cfg.portMax}`);"
+              },
+              {
+                "path": "src/stack.ts",
+                "line": 54,
+                "snippet": "ports: { min: cfg.portMin, max: cfg.portMax },"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.portMin",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.portMin",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 218,
+                "snippet": "for (let p = cfg.portMin; p <= cfg.portMax; p++) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 693,
+                "snippet": "if (i >= 0 && t >= 0 && cmdline[i + 1] === `127.0.0.1:${site.port}` && fs.realpathSync(cmdline[t + 1]) === docReal) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 707,
+                "snippet": "if (await portOpen(\"127.0.0.1\", site.port)) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 709,
+                "snippet": "return bad(`port ${site.port} is held by a process this stack does not own — refusing`);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 714,
+                "snippet": "const p = spawn(cfg.phpBin, [\"-d\", \"memory_limit=512M\", \"-S\", `127.0.0.1:${site.port}`, \"-t\", site.docroot], {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 730,
+                "snippet": "if (await portOpen(\"127.0.0.1\", site.port)) return { ok: true, result: \"started\" };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 826,
+                "snippet": "if (!port) return bad(`no free port in ${cfg.portMin}-${cfg.portMax}`);"
+              },
+              {
+                "path": "src/stack.ts",
+                "line": 54,
+                "snippet": "ports: { min: cfg.portMin, max: cfg.portMax },"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.registryFile",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.registryFile",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 97,
+                "snippet": "if (!c.registryFile) c.registryFile = path.join(c.stackRoot, \"sites.json\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 197,
+                "snippet": "const j = JSON.parse(fs.readFileSync(cfg.registryFile, \"utf8\"));"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 206,
+                "snippet": "const tmp = cfg.registryFile + \".tmp\";"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 208,
+                "snippet": "fs.renameSync(tmp, cfg.registryFile);"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.runDir",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.runDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 94,
+                "snippet": "if (!c.runDir) c.runDir = path.join(c.stackRoot, \"run\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 176,
+                "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 532,
+                "snippet": "return { user: j.user, password: j.password, socket: j.socket ?? path.join(cfg.runDir, \"mysql.sock\") };"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 545,
+                "snippet": "return path.join(cfg.runDir, \"mysql.sock\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 596,
+                "snippet": "`--pid-file=${path.join(cfg.runDir, \"mysqld.pid\")}`,"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.sitesDir",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.sitesDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 96,
+                "snippet": "if (!c.sitesDir) c.sitesDir = path.join(c.stackRoot, \"sites\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 176,
+                "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 828,
+                "snippet": "const docroot = path.join(cfg.sitesDir, id, \"public\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 835,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 842,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 850,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 870,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 895,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 924,
+                "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.stackRoot",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.stackRoot",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 89,
+                "snippet": "c.stackRoot = path.resolve(c.stackRoot);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 90,
+                "snippet": "if (!c.phpBin) c.phpBin = path.join(c.stackRoot, \"runtime\", \"php\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 91,
+                "snippet": "if (!c.wpCli) c.wpCli = path.join(c.stackRoot, \"runtime\", \"wp-cli.phar\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 92,
+                "snippet": "if (!c.mariadbDir) c.mariadbDir = path.join(c.stackRoot, \"runtime\", \"mariadb\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 93,
+                "snippet": "if (!c.dbDir) c.dbDir = path.join(c.stackRoot, \"db\", \"data\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 94,
+                "snippet": "if (!c.runDir) c.runDir = path.join(c.stackRoot, \"run\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 95,
+                "snippet": "if (!c.logsDir) c.logsDir = path.join(c.stackRoot, \"logs\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 96,
+                "snippet": "if (!c.sitesDir) c.sitesDir = path.join(c.stackRoot, \"sites\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 97,
+                "snippet": "if (!c.registryFile) c.registryFile = path.join(c.stackRoot, \"sites.json\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 98,
+                "snippet": "if (!c.credFile) c.credFile = path.join(c.stackRoot, \".db-credential\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 176,
+                "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 239,
+                "snippet": "stackRoot: cfg.stackRoot,"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.pluginConfig.wpCli",
+            "kind": "api-member",
+            "identity": "api.pluginConfig.wpCli",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/engine.ts",
+                "line": 91,
+                "snippet": "if (!c.wpCli) c.wpCli = path.join(c.stackRoot, \"runtime\", \"wp-cli.phar\");"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 138,
+                "snippet": "const [cmd, ...args] = argv;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 242,
+                "snippet": "wpCli: { installed: isFile(cfg.wpCli) },"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 337,
+                "snippet": "if (!isFile(cfg.wpCli) || !(await phpRuns(cfg))) return false;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 338,
+                "snippet": "return (await run([cfg.phpBin, cfg.wpCli, \"--version\", \"--allow-root\"], 60_000)).code === 0;"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 431,
+                "snippet": "const part = cfg.wpCli + \".part\";"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 437,
+                "snippet": "fs.renameSync(part, cfg.wpCli);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 439,
+                "snippet": "fs.rmSync(cfg.wpCli, { force: true });"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 664,
+                "snippet": "return run([cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${docroot}`, \"--skip-plugins\", \"--skip-themes\", ...args], timeoutMs);"
+              },
+              {
+                "path": "src/engine.ts",
+                "line": 777,
+                "snippet": "const base = [cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${site.docroot}`, \"--skip-plugins\", \"--skip-themes\", \"--no-color\"];"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.registerHttpRoute",
+            "kind": "api-member",
+            "identity": "api.registerHttpRoute",
+            "classification": "runtime",
+            "referenceKinds": [
+              "call"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 325,
+                "snippet": "api.registerHttpRoute({"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "api-member:api.rootDir",
+            "kind": "api-member",
+            "identity": "api.rootDir",
+            "classification": "runtime",
+            "referenceKinds": [
+              "member-access"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 213,
+                "snippet": "const tokenFile = path.join(api.rootDir ?? process.cwd(), \".api-token\");"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_create",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_create",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 12,
+                "snippet": "\"wp_stack_create\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_db",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_db",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 14,
+                "snippet": "\"wp_stack_db\""
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_delete_site",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_delete_site",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 13,
+                "snippet": "\"wp_stack_delete_site\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_details",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_details",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 10,
+                "snippet": "\"wp_stack_details\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_site_action",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_site_action",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 11,
+                "snippet": "\"wp_stack_site_action\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_sites",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_sites",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 9,
+                "snippet": "\"wp_stack_sites\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "manifest-contract:manifest.contracts.tools:wp_stack_status",
+            "kind": "manifest-contract",
+            "identity": "manifest.contracts.tools:wp_stack_status",
+            "classification": "declarative",
+            "referenceKinds": [
+              "manifest-declaration"
+            ],
+            "evidence": [
+              {
+                "path": "openclaw.plugin.json",
+                "line": 8,
+                "snippet": "\"wp_stack_status\","
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "sdk-export:openclaw/plugin-sdk/feature-contract#defineFeatureContract",
+            "kind": "sdk-export",
+            "identity": "openclaw/plugin-sdk/feature-contract#defineFeatureContract",
+            "classification": "runtime",
+            "referenceKinds": [
+              "call",
+              "import"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 31,
+                "snippet": "import { defineFeatureContract } from \"openclaw/plugin-sdk/feature-contract\";"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 63,
+                "snippet": "const contract = defineFeatureContract({"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "sdk-export:openclaw/plugin-sdk/feature-plugin#FeatureHandlers",
+            "kind": "sdk-export",
+            "identity": "openclaw/plugin-sdk/feature-plugin#FeatureHandlers",
+            "classification": "type",
+            "referenceKinds": [
+              "type-import",
+              "type-reference"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 33,
+                "snippet": "import type { FeatureHandlers } from \"openclaw/plugin-sdk/feature-plugin\";"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 429,
+                "snippet": "return h as unknown as FeatureHandlers<typeof contract>;"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "sdk-export:openclaw/plugin-sdk/feature-plugin#defineFeaturePlugin",
+            "kind": "sdk-export",
+            "identity": "openclaw/plugin-sdk/feature-plugin#defineFeaturePlugin",
+            "classification": "runtime",
+            "referenceKinds": [
+              "call",
+              "import"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 32,
+                "snippet": "import { defineFeaturePlugin } from \"openclaw/plugin-sdk/feature-plugin\";"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 203,
+                "snippet": "const feature = defineFeaturePlugin<typeof contract>({"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "sdk-module:openclaw/plugin-sdk/feature-contract",
+            "kind": "sdk-module",
+            "identity": "openclaw/plugin-sdk/feature-contract",
+            "classification": "runtime",
+            "referenceKinds": [
+              "import"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 31,
+                "snippet": "import { defineFeatureContract } from \"openclaw/plugin-sdk/feature-contract\";"
+              }
+            ],
+            "deprecationCodes": []
+          },
+          {
+            "key": "sdk-module:openclaw/plugin-sdk/feature-plugin",
+            "kind": "sdk-module",
+            "identity": "openclaw/plugin-sdk/feature-plugin",
+            "classification": "mixed",
+            "referenceKinds": [
+              "import",
+              "type-import"
+            ],
+            "evidence": [
+              {
+                "path": "src/index.ts",
+                "line": 32,
+                "snippet": "import { defineFeaturePlugin } from \"openclaw/plugin-sdk/feature-plugin\";"
+              },
+              {
+                "path": "src/index.ts",
+                "line": 33,
+                "snippet": "import type { FeatureHandlers } from \"openclaw/plugin-sdk/feature-plugin\";"
+              }
+            ],
+            "deprecationCodes": []
+          }
+        ],
+        "unknowns": []
+      }
+    }
+  ],
+  "sdkUsage": {
+    "schemaVersion": 1,
+    "analysisVersion": "1",
+    "inputKind": "source",
+    "status": "complete",
+    "coverage": {
+      "filesDiscovered": 18,
+      "filesAnalyzed": 5,
+      "filesExcluded": 13
+    },
+    "entries": [
+      {
+        "key": "api-member:api.logger",
+        "kind": "api-member",
+        "identity": "api.logger",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 210,
+            "snippet": "const log = api.logger;"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.logger.info",
+        "kind": "api-member",
+        "identity": "api.logger.info",
+        "classification": "runtime",
+        "referenceKinds": [
+          "call"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 233,
+            "snippet": "log.info(`otto-wp-stack: minted HTTP API token at ${tokenFile} (owner-only file)`);"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 282,
+            "snippet": "log.info(\"otto-wp-stack: HTTP API token rotated\");"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.logger.warn",
+        "kind": "api-member",
+        "identity": "api.logger.warn",
+        "classification": "runtime",
+        "referenceKinds": [
+          "call"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 235,
+            "snippet": "log.warn(`otto-wp-stack: could not persist api token file: ${(e as Error).message}`);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig",
+        "kind": "api-member",
+        "identity": "api.pluginConfig",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 209,
+            "snippet": "const cfg = resolveConfig(api.pluginConfig as Partial<StackConfig> | undefined);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.apiToken",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.apiToken",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 215,
+            "snippet": "typeof api.pluginConfig?.apiToken === \"string\" && (api.pluginConfig.apiToken as string).length >= 16"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 216,
+            "snippet": "? (api.pluginConfig.apiToken as string)"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.credFile",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.credFile",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 98,
+            "snippet": "if (!c.credFile) c.credFile = path.join(c.stackRoot, \".db-credential\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 244,
+            "snippet": "dbCredential: isFile(cfg.credFile),"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 491,
+            "snippet": "if (!isFile(cfg.credFile)) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 501,
+            "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 530,
+            "snippet": "const j = JSON.parse(fs.readFileSync(cfg.credFile, \"utf8\"));"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.dbDir",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.dbDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 93,
+            "snippet": "if (!c.dbDir) c.dbDir = path.join(c.stackRoot, \"db\", \"data\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 176,
+            "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 460,
+            "snippet": "if (!fs.existsSync(path.join(cfg.dbDir, \"mysql\"))) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 474,
+            "snippet": "`--datadir=${cfg.dbDir}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 585,
+            "snippet": "if (!fs.existsSync(cfg.dbDir) || fs.readdirSync(cfg.dbDir).length === 0) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 594,
+            "snippet": "`--datadir=${cfg.dbDir}`,"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.dbHost",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.dbHost",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 488,
+            "snippet": "bootLog(cfg, `db: up on ${cfg.dbHost}:${cfg.dbPort}`);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 556,
+            "snippet": "`-h${cfg.dbHost}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 570,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 500))) return { up: false };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 574,
+            "snippet": "[mariadbBin(cfg, \"mariadb\"), \"--protocol=TCP\", `-h${cfg.dbHost}`, `-P${cfg.dbPort}`, `-u${cred.user}`, `-p${cred.password}`, \"-e\", \"SELECT VERSION()\"],"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 584,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 597,
+            "snippet": "`--bind-address=${cfg.dbHost}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 616,
+            "snippet": "if (await portOpen(cfg.dbHost, cfg.dbPort, 400)) return { ok: true, result: \"database started\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 633,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"already stopped\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 640,
+            "snippet": "`-h${cfg.dbHost}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 653,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"database stopped\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 862,
+            "snippet": "`--dbhost=${cfg.dbHost}:${cfg.dbPort}`,"
+          },
+          {
+            "path": "src/stack.ts",
+            "line": 170,
+            "snippet": "const dbUp = await portOpen(cfg.dbHost, cfg.dbPort, 500);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.dbPort",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.dbPort",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 488,
+            "snippet": "bootLog(cfg, `db: up on ${cfg.dbHost}:${cfg.dbPort}`);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 501,
+            "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 557,
+            "snippet": "`-P${cfg.dbPort}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 570,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 500))) return { up: false };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 574,
+            "snippet": "[mariadbBin(cfg, \"mariadb\"), \"--protocol=TCP\", `-h${cfg.dbHost}`, `-P${cfg.dbPort}`, `-u${cred.user}`, `-p${cred.password}`, \"-e\", \"SELECT VERSION()\"],"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 584,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 598,
+            "snippet": "`--port=${cfg.dbPort}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 616,
+            "snippet": "if (await portOpen(cfg.dbHost, cfg.dbPort, 400)) return { ok: true, result: \"database started\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 633,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"already stopped\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 641,
+            "snippet": "`-P${cfg.dbPort}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 653,
+            "snippet": "if (!(await portOpen(cfg.dbHost, cfg.dbPort, 400))) return { ok: true, result: \"database stopped\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 862,
+            "snippet": "`--dbhost=${cfg.dbHost}:${cfg.dbPort}`,"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.dbUser",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.dbUser",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 370,
+            "snippet": "if (!/^[A-Za-z0-9_]{1,32}$/.test(cfg.dbUser)) return bad(\"invalid dbUser config (letters, digits, underscore)\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 493,
+            "snippet": "bootLog(cfg, `db: creating user '${cfg.dbUser}' (grants limited to wps_% databases)…`);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 496,
+            "snippet": "`CREATE USER IF NOT EXISTS '${cfg.dbUser}'@'%' IDENTIFIED BY '${pass}';` +"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 497,
+            "snippet": "`GRANT ALL PRIVILEGES ON \\`wps\\_%\\`.* TO '${cfg.dbUser}'@'%';` +"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 501,
+            "snippet": "fs.writeFileSync(cfg.credFile, JSON.stringify({ user: cfg.dbUser, password: pass, socket: dbSocket(cfg), port: cfg.dbPort }, null, 2), { mode: 0o600 });"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.logsDir",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.logsDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 95,
+            "snippet": "if (!c.logsDir) c.logsDir = path.join(c.stackRoot, \"logs\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 176,
+            "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 589,
+            "snippet": "const log = fs.openSync(path.join(cfg.logsDir, \"mariadb.log\"), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 601,
+            "snippet": "`--log-error=${path.join(cfg.logsDir, \"mariadb.log\")}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 623,
+            "snippet": "tail = fs.readFileSync(path.join(cfg.logsDir, \"mariadb.log\"), \"utf8\").split(\"\\n\").slice(-12).join(\" | \").slice(-400);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 712,
+            "snippet": "const fd = fs.openSync(path.join(cfg.logsDir, `${site.id}.log`), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.mariadbDir",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.mariadbDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 92,
+            "snippet": "if (!c.mariadbDir) c.mariadbDir = path.join(c.stackRoot, \"runtime\", \"mariadb\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 243,
+            "snippet": "mariadb: { installed: isFile(path.join(cfg.mariadbDir, \"bin\", \"mariadbd\")) },"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 255,
+            "snippet": "const r = await run([path.join(cfg.mariadbDir, \"bin\", \"mariadbd\"), \"--version\"], 10_000);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 452,
+            "snippet": "fs.mkdirSync(cfg.mariadbDir, { recursive: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 453,
+            "snippet": "const x = await run([\"tar\", \"-xzf\", path.join(tmp, \"db.tgz\"), \"-C\", cfg.mariadbDir, \"--strip-components=1\"], 1_200_000);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 471,
+            "snippet": "path.join(cfg.mariadbDir, \"scripts\", \"mariadb-install-db\"),"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 473,
+            "snippet": "`--basedir=${cfg.mariadbDir}`,"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 541,
+            "snippet": "return path.join(cfg.mariadbDir, \"bin\", name);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.phpBin",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.phpBin",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 90,
+            "snippet": "if (!c.phpBin) c.phpBin = path.join(c.stackRoot, \"runtime\", \"php\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 138,
+            "snippet": "const [cmd, ...args] = argv;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 241,
+            "snippet": "php: { installed: isFile(cfg.phpBin) },"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 247,
+            "snippet": "const r = await run([cfg.phpBin, \"-v\"], 10_000);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 332,
+            "snippet": "if (!isFile(cfg.phpBin)) return false;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 333,
+            "snippet": "return (await run([cfg.phpBin, \"-v\"], 10_000)).code === 0;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 338,
+            "snippet": "return (await run([cfg.phpBin, cfg.wpCli, \"--version\", \"--allow-root\"], 60_000)).code === 0;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 419,
+            "snippet": "fs.copyFileSync(found, cfg.phpBin + \".part\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 420,
+            "snippet": "fs.chmodSync(cfg.phpBin + \".part\", 0o755);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 421,
+            "snippet": "fs.renameSync(cfg.phpBin + \".part\", cfg.phpBin);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 664,
+            "snippet": "return run([cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${docroot}`, \"--skip-plugins\", \"--skip-themes\", ...args], timeoutMs);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 672,
+            "snippet": "phpReal = fs.realpathSync(cfg.phpBin);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.portMax",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.portMax",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 218,
+            "snippet": "for (let p = cfg.portMin; p <= cfg.portMax; p++) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 826,
+            "snippet": "if (!port) return bad(`no free port in ${cfg.portMin}-${cfg.portMax}`);"
+          },
+          {
+            "path": "src/stack.ts",
+            "line": 54,
+            "snippet": "ports: { min: cfg.portMin, max: cfg.portMax },"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.portMin",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.portMin",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 218,
+            "snippet": "for (let p = cfg.portMin; p <= cfg.portMax; p++) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 693,
+            "snippet": "if (i >= 0 && t >= 0 && cmdline[i + 1] === `127.0.0.1:${site.port}` && fs.realpathSync(cmdline[t + 1]) === docReal) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 707,
+            "snippet": "if (await portOpen(\"127.0.0.1\", site.port)) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 709,
+            "snippet": "return bad(`port ${site.port} is held by a process this stack does not own — refusing`);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 714,
+            "snippet": "const p = spawn(cfg.phpBin, [\"-d\", \"memory_limit=512M\", \"-S\", `127.0.0.1:${site.port}`, \"-t\", site.docroot], {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 730,
+            "snippet": "if (await portOpen(\"127.0.0.1\", site.port)) return { ok: true, result: \"started\" };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 826,
+            "snippet": "if (!port) return bad(`no free port in ${cfg.portMin}-${cfg.portMax}`);"
+          },
+          {
+            "path": "src/stack.ts",
+            "line": 54,
+            "snippet": "ports: { min: cfg.portMin, max: cfg.portMax },"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.registryFile",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.registryFile",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 97,
+            "snippet": "if (!c.registryFile) c.registryFile = path.join(c.stackRoot, \"sites.json\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 197,
+            "snippet": "const j = JSON.parse(fs.readFileSync(cfg.registryFile, \"utf8\"));"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 206,
+            "snippet": "const tmp = cfg.registryFile + \".tmp\";"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 208,
+            "snippet": "fs.renameSync(tmp, cfg.registryFile);"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.runDir",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.runDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 94,
+            "snippet": "if (!c.runDir) c.runDir = path.join(c.stackRoot, \"run\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 176,
+            "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 532,
+            "snippet": "return { user: j.user, password: j.password, socket: j.socket ?? path.join(cfg.runDir, \"mysql.sock\") };"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 545,
+            "snippet": "return path.join(cfg.runDir, \"mysql.sock\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 596,
+            "snippet": "`--pid-file=${path.join(cfg.runDir, \"mysqld.pid\")}`,"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.sitesDir",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.sitesDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 96,
+            "snippet": "if (!c.sitesDir) c.sitesDir = path.join(c.stackRoot, \"sites\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 176,
+            "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 828,
+            "snippet": "const docroot = path.join(cfg.sitesDir, id, \"public\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 835,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 842,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 850,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 870,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 895,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 924,
+            "snippet": "fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.stackRoot",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.stackRoot",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 89,
+            "snippet": "c.stackRoot = path.resolve(c.stackRoot);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 90,
+            "snippet": "if (!c.phpBin) c.phpBin = path.join(c.stackRoot, \"runtime\", \"php\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 91,
+            "snippet": "if (!c.wpCli) c.wpCli = path.join(c.stackRoot, \"runtime\", \"wp-cli.phar\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 92,
+            "snippet": "if (!c.mariadbDir) c.mariadbDir = path.join(c.stackRoot, \"runtime\", \"mariadb\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 93,
+            "snippet": "if (!c.dbDir) c.dbDir = path.join(c.stackRoot, \"db\", \"data\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 94,
+            "snippet": "if (!c.runDir) c.runDir = path.join(c.stackRoot, \"run\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 95,
+            "snippet": "if (!c.logsDir) c.logsDir = path.join(c.stackRoot, \"logs\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 96,
+            "snippet": "if (!c.sitesDir) c.sitesDir = path.join(c.stackRoot, \"sites\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 97,
+            "snippet": "if (!c.registryFile) c.registryFile = path.join(c.stackRoot, \"sites.json\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 98,
+            "snippet": "if (!c.credFile) c.credFile = path.join(c.stackRoot, \".db-credential\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 176,
+            "snippet": "for (const d of [cfg.stackRoot, path.join(cfg.stackRoot, \"runtime\"), cfg.dbDir, cfg.runDir, cfg.logsDir, cfg.sitesDir]) {"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 239,
+            "snippet": "stackRoot: cfg.stackRoot,"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.pluginConfig.wpCli",
+        "kind": "api-member",
+        "identity": "api.pluginConfig.wpCli",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/engine.ts",
+            "line": 91,
+            "snippet": "if (!c.wpCli) c.wpCli = path.join(c.stackRoot, \"runtime\", \"wp-cli.phar\");"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 138,
+            "snippet": "const [cmd, ...args] = argv;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 242,
+            "snippet": "wpCli: { installed: isFile(cfg.wpCli) },"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 337,
+            "snippet": "if (!isFile(cfg.wpCli) || !(await phpRuns(cfg))) return false;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 338,
+            "snippet": "return (await run([cfg.phpBin, cfg.wpCli, \"--version\", \"--allow-root\"], 60_000)).code === 0;"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 431,
+            "snippet": "const part = cfg.wpCli + \".part\";"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 437,
+            "snippet": "fs.renameSync(part, cfg.wpCli);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 439,
+            "snippet": "fs.rmSync(cfg.wpCli, { force: true });"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 664,
+            "snippet": "return run([cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${docroot}`, \"--skip-plugins\", \"--skip-themes\", ...args], timeoutMs);"
+          },
+          {
+            "path": "src/engine.ts",
+            "line": 777,
+            "snippet": "const base = [cfg.phpBin, \"-d\", \"memory_limit=1G\", cfg.wpCli, `--path=${site.docroot}`, \"--skip-plugins\", \"--skip-themes\", \"--no-color\"];"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.registerHttpRoute",
+        "kind": "api-member",
+        "identity": "api.registerHttpRoute",
+        "classification": "runtime",
+        "referenceKinds": [
+          "call"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 325,
+            "snippet": "api.registerHttpRoute({"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "api-member:api.rootDir",
+        "kind": "api-member",
+        "identity": "api.rootDir",
+        "classification": "runtime",
+        "referenceKinds": [
+          "member-access"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 213,
+            "snippet": "const tokenFile = path.join(api.rootDir ?? process.cwd(), \".api-token\");"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_create",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_create",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 12,
+            "snippet": "\"wp_stack_create\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_db",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_db",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 14,
+            "snippet": "\"wp_stack_db\""
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_delete_site",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_delete_site",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 13,
+            "snippet": "\"wp_stack_delete_site\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_details",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_details",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 10,
+            "snippet": "\"wp_stack_details\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_site_action",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_site_action",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 11,
+            "snippet": "\"wp_stack_site_action\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_sites",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_sites",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 9,
+            "snippet": "\"wp_stack_sites\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "manifest-contract:manifest.contracts.tools:wp_stack_status",
+        "kind": "manifest-contract",
+        "identity": "manifest.contracts.tools:wp_stack_status",
+        "classification": "declarative",
+        "referenceKinds": [
+          "manifest-declaration"
+        ],
+        "evidence": [
+          {
+            "path": "openclaw.plugin.json",
+            "line": 8,
+            "snippet": "\"wp_stack_status\","
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "sdk-export:openclaw/plugin-sdk/feature-contract#defineFeatureContract",
+        "kind": "sdk-export",
+        "identity": "openclaw/plugin-sdk/feature-contract#defineFeatureContract",
+        "classification": "runtime",
+        "referenceKinds": [
+          "call",
+          "import"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 31,
+            "snippet": "import { defineFeatureContract } from \"openclaw/plugin-sdk/feature-contract\";"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 63,
+            "snippet": "const contract = defineFeatureContract({"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "sdk-export:openclaw/plugin-sdk/feature-plugin#FeatureHandlers",
+        "kind": "sdk-export",
+        "identity": "openclaw/plugin-sdk/feature-plugin#FeatureHandlers",
+        "classification": "type",
+        "referenceKinds": [
+          "type-import",
+          "type-reference"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 33,
+            "snippet": "import type { FeatureHandlers } from \"openclaw/plugin-sdk/feature-plugin\";"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 429,
+            "snippet": "return h as unknown as FeatureHandlers<typeof contract>;"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "sdk-export:openclaw/plugin-sdk/feature-plugin#defineFeaturePlugin",
+        "kind": "sdk-export",
+        "identity": "openclaw/plugin-sdk/feature-plugin#defineFeaturePlugin",
+        "classification": "runtime",
+        "referenceKinds": [
+          "call",
+          "import"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 32,
+            "snippet": "import { defineFeaturePlugin } from \"openclaw/plugin-sdk/feature-plugin\";"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 203,
+            "snippet": "const feature = defineFeaturePlugin<typeof contract>({"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "sdk-module:openclaw/plugin-sdk/feature-contract",
+        "kind": "sdk-module",
+        "identity": "openclaw/plugin-sdk/feature-contract",
+        "classification": "runtime",
+        "referenceKinds": [
+          "import"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 31,
+            "snippet": "import { defineFeatureContract } from \"openclaw/plugin-sdk/feature-contract\";"
+          }
+        ],
+        "deprecationCodes": []
+      },
+      {
+        "key": "sdk-module:openclaw/plugin-sdk/feature-plugin",
+        "kind": "sdk-module",
+        "identity": "openclaw/plugin-sdk/feature-plugin",
+        "classification": "mixed",
+        "referenceKinds": [
+          "import",
+          "type-import"
+        ],
+        "evidence": [
+          {
+            "path": "src/index.ts",
+            "line": 32,
+            "snippet": "import { defineFeaturePlugin } from \"openclaw/plugin-sdk/feature-plugin\";"
+          },
+          {
+            "path": "src/index.ts",
+            "line": 33,
+            "snippet": "import type { FeatureHandlers } from \"openclaw/plugin-sdk/feature-plugin\";"
+          }
+        ],
+        "deprecationCodes": []
+      }
+    ],
+    "unknowns": []
+  },
+  "issues": [],
+  "contractProbes": [],
+  "logs": [
+    {
+      "fixture": "otto-wp-stack",
+      "code": "seam-inventory",
+      "level": "log",
+      "message": "observed 0 hooks, 1 registrations, and 1 manifest contracts",
+      "evidence": [
+        "registration:registerHttpRoute",
+        "manifestContract:tools"
+      ]
+    },
+    {
+      "fixture": "otto-wp-stack",
+      "code": "api-registrars-present",
+      "level": "log",
+      "message": "all observed api.register* calls exist in the target OpenClaw plugin API builder",
+      "evidence": [
+        "registerHttpRoute"
+      ]
+    },
+    {
+      "fixture": "otto-wp-stack",
+      "code": "sdk-exports-present",
+      "level": "log",
+      "message": "all observed plugin SDK imports exist in target OpenClaw package exports",
+      "evidence": [
+        "openclaw/plugin-sdk/feature-contract",
+        "openclaw/plugin-sdk/feature-plugin"
+      ]
+    },
+    {
+      "fixture": "otto-wp-stack",
+      "code": "manifest-fields-checked",
+      "level": "log",
+      "message": "plugin manifest fields were compared with target OpenClaw manifest types",
+      "evidence": [
+        "openclaw.plugin.json"
+      ]
+    },
+    {
+      "fixture": "otto-wp-stack",
+      "code": "package-metadata",
+      "level": "log",
+      "message": "selected package metadata for plugin contract checks",
+      "evidence": [
+        "package.json",
+        "@lunarlyra/otto-wp-stack",
+        "version:0.3.1"
+      ]
+    },
+    {
+      "fixture": "otto-wp-stack",
+      "code": "declarative-contracts",
+      "level": "log",
+      "message": "fixture declares manifest contracts that can be checked without executing plugin code",
+      "evidence": [
+        "tools"
+      ]
+    }
+  ],
+  "decisions": []
+}

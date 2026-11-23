@@ -198,5 +198,9 @@ try {
   /* informational */
 }
 
+import { spawnSync } from "node:child_process";
+const guard = spawnSync(process.execPath, [new URL("./contract-ops-check.mjs", import.meta.url).pathname], { encoding: "utf8" });
+check("contract: op ids + app ops valid", guard.status === 0, (guard.stderr || guard.stdout || "").trim().slice(0, 160));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
