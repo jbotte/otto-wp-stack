@@ -44,6 +44,7 @@ otto-wp-stack-plugin/          ← this folder (copy to any Otto)
   dist/                        ← compiled; ship as-is, or `npm run build`
   src/                         ← TypeScript source
   bin/wp-stack-bootstrap.sh    ← one-time runtime install (no sudo)
+  app/                         ← the dashboard app TEMPLATE (config.json ships with a placeholder)
   test/standalone-check.mjs    ← isolation + live e2e test
 apps/wp-stack-next/            ← the Otto dashboard app (artifact)
   index.tsx
@@ -61,6 +62,23 @@ Otto installs the plugin (`openclaw plugins install clawhub:@lunarlyra/otto-wp-s
 you tap the approval card, then open the **WP Stack (Standalone)** dashboard and
 press **Install runtime** — the plugin downloads and configures its own PHP,
 WP-CLI and MariaDB. No terminal, no sudo.
+
+### Handoff flow (what a fresh Otto does — no token copy-paste)
+
+1. Plugin installed + enabled → it **mints its `.api-token` at load time**, so the
+   file exists the moment the plugin is enabled (owner-only file, never returned
+   by reads).
+2. The **dashboard app ships inside the plugin package** at `app/`. The setup Otto
+   copies `<plugin-install-dir>/app/` to `<workspace>/apps/wp-stack-next/` and
+   publishes it ("Show me the app at apps/wp-stack-next"), then approves the
+   app's script/network capability once.
+3. The app's first-run card has an **Auto-connect** button: one tap sends the
+   owner's Otto a setup message; Otto reads the token file itself, writes the
+   app's `config.json`, and verifies the probe. The owner never sees a token.
+   (Manual fallback: paste `.api-token` into the app's Settings tab.)
+4. Runtime install is the only owner-visible step beyond approvals: the
+   dashboard's **Install runtime** button (or ask Otto: *"install the wp-stack
+   runtime"* → `wp_stack_bootstrap`).
 
 <details>
 <summary>Manual path (copy-from-scratch, or offline)</summary>
@@ -96,11 +114,12 @@ terminal). Nothing here needs sudo.
 4. **Publish the dashboard app**: ask Otto (on that box):
    > Show me the app at apps/wp-stack-next
    and approve the app's script/network capability once.
-5. **Connect them**: read the token and paste it into the app's Settings tab:
+5. **Connect them**: press **Auto-connect** in the dashboard (that Otto reads the
+   token and writes `config.json` itself). Manual equivalent:
    ```bash
    cat <plugin-folder>/.api-token
    ```
-   (Or ask Otto to run the plugin's `revealToken` action.) The Settings tab's
+   (Or ask Otto to run the plugin's `reveal-token` action.) The Settings tab's
    “Run connection probe” should show `browser→route: ok` (or `blocked` —
    that's fine, the dashboard works through the script path) and
    `app→plugin: ok (db up)`.

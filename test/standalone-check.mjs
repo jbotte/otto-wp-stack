@@ -72,6 +72,8 @@ const codeFiles = [
   "dist/index.js",
   "openclaw.plugin.json",
   "bin/wp-stack-bootstrap.sh",
+  "app/index.tsx",
+  "app/scripts/stack.mjs",
   "../apps/wp-stack-next/scripts/stack.mjs",
   "../apps/wp-stack-next/index.tsx",
 ];

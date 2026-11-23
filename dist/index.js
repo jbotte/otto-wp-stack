@@ -168,7 +168,7 @@ const HTTP_ALIASES = {
     "delete-site": "delete-site",
     "db-action": "db-action",
 };
-const PLUGIN_VERSION = "0.2.0";
+const PLUGIN_VERSION = "0.3.4";
 export default (() => {
     const feature = defineFeaturePlugin({
         contract,
@@ -212,6 +212,11 @@ export default (() => {
                 const b = enc.encode(expected);
                 return a.length === b.length && crypto.timingSafeEqual(a, b);
             }
+            // Eagerly mint at load time so `.api-token` exists the moment the plugin is
+            // enabled. The handoff flow (fresh Otto installs from ClawHub) reads the file
+            // right after enabling; lazy mint would leave it missing until the first
+            // authenticated call, which is the chicken-and-egg the setup agent trips on.
+            loadOrMintToken();
             // ---- Shared dispatcher (tools + actions + HTTP all land here) ------
             async function invoke(op, a) {
                 switch (op) {

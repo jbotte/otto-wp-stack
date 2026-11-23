@@ -1,7 +1,7 @@
 // Contract guard: mirrors openclaw's feature-contract validation
 // (dist/plugin-sdk/feature-contract.js): operation ids must match
 // /^[a-z][a-z0-9._-]{0,127}$/u or activation throws.
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -31,7 +31,17 @@ if (missing.length) {
 }
 
 // App translate() must only emit ids that exist in the contract.
-const app = readFileSync(path.join(here, "..", "..", "apps", "wp-stack-next", "index.tsx"), "utf8");
+// Prefer the shipped in-repo template; fall back to the workspace sibling copy.
+const appCandidates = [
+  path.join(here, "..", "app", "index.tsx"),
+  path.join(here, "..", "..", "apps", "wp-stack-next", "index.tsx"),
+];
+const appPath = appCandidates.find((p) => existsSync(p));
+if (!appPath) {
+  console.error("FAIL  app: no dashboard app found (app/index.tsx or ../../apps/wp-stack-next/index.tsx)");
+  process.exit(1);
+}
+const app = readFileSync(appPath, "utf8");
 const emitted = [...app.matchAll(/return \["([a-z0-9-]+)"/g)].map((m) => m[1]);
 const unknown = emitted.filter((o) => !keys.includes(o));
 if (unknown.length) {
