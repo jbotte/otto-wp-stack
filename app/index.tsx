@@ -27,6 +27,8 @@ function translate(argv) {
     case "create": return ["create-site", { id: a[0] ?? "", name: a[1] ?? "", adminUser: a[2] ?? "", email: a[3] ?? "" }];
     case "delete-site": return ["delete-site", { id: a[0] ?? "", confirm: a[1] ?? "" }];
     case "db-action": return ["db-action", { action: a[0] ?? "" }];
+    case "serve": return ["serve", a[1] ? { siteId: a[0] ?? "", httpsPort: Number(a[1]) } : { siteId: a[0] ?? "" }];
+    case "unserve": return ["unserve", { siteId: a[0] ?? "" }];
     case "token-check": return ["full", {}];
     default: return [null, null];
   }
@@ -177,7 +179,7 @@ export default function App() {
     if (!mounted.current) return;
     setBusy("");
     if (after) after(j);
-    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action"].includes(args[0])) {
+    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action", "serve", "unserve"].includes(args[0])) {
       const patch = { ts: j.ts };
       if (j.status) patch.status = j.status;
       if (j.sites) patch.sites = j.sites;
@@ -403,9 +405,15 @@ export default function App() {
               <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 <a className="o-btn" style={{ textDecoration: "none", fontSize: 12 }} href={s.url} target="_blank" rel="noreferrer">Open</a>
                 <a className="o-btn" style={{ textDecoration: "none", fontSize: 12 }} href={s.url + "/wp-admin/"} target="_blank" rel="noreferrer">WP Admin</a>
+                {s.serveUrl && <a className="o-btn" style={{ textDecoration: "none", fontSize: 12, borderColor: "var(--accent)" }} href={s.serveUrl} target="_blank" rel="noreferrer">Open HTTPS</a>}
                 {!s.running && <button className="o-btn o-btn-primary" disabled={!!busy} onClick={() => run("start", ["site-action", s.id, "start"])}>Start</button>}
                 {s.running && <button className="o-btn" disabled={!!busy} onClick={() => run("stop", ["site-action", s.id, "stop"])}>Stop</button>}
                 {s.running && <button className="o-btn" disabled={!!busy} onClick={() => run("restart", ["site-action", s.id, "restart"])}>Restart</button>}
+                {s.servePort ? (
+                  <button className="o-btn" disabled={!!busy} onClick={() => run("unserve", ["unserve", s.id])}>Unserve</button>
+                ) : (
+                  <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
+                )}
                 <button className="o-btn" disabled={!!busy} onClick={() => run("details", ["details", s.id], (j) => { if (j.ok) setData((d) => ({ ...(d ?? {}), details: { id: s.id, details: j.details } })); })}>Details</button>
                 {confirmDel[s.id] === 1 ? (
                   <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
@@ -488,7 +496,9 @@ export default function App() {
                 {r.ours ? <span style={{ color: "var(--accent)", fontSize: 11 }}> · ours</span> : null}
               </Row>
             ))}
-            <div className="o-muted" style={{ fontSize: 12, marginTop: 6 }}>Rule changes are owner-side by design (tailscale serve).</div>
+            <div className="o-muted" style={{ fontSize: 12, marginTop: 6 }}>
+              Tap <b>Serve</b> on a site card (or ask Otto: <i>“serve the demo site”</i>) to expose it over HTTPS via the plugin's wp_stack_serve tool — no terminal needed. If tailscale denies the change, the error names the one-time operator grant (<code style={{ fontFamily: "var(--font-mono)" }}>sudo tailscale set --operator=&lt;agent user&gt;</code>).
+            </div>
           </div>
         </div>
       )}

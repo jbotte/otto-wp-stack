@@ -18,6 +18,8 @@
  *   create <id> <name> <adminUser> <email>
  *   delete-site <id> <id>
  *   db-action <start|stop>       token-check
+ *   serve <site-id> [https-port]
+ *   unserve <site-id>
  */
 import { readFileSync } from "node:fs";
 import * as path from "node:path";
@@ -55,6 +57,8 @@ function translate(argv) {
     case "create": return ["create-site", { id: a[0] ?? "", name: a[1] ?? "", adminUser: a[2] ?? "", email: a[3] ?? "" }];
     case "delete-site": return ["delete-site", { id: a[0] ?? "", confirm: a[1] ?? "" }];
     case "db-action": return ["db-action", { action: a[0] ?? "" }];
+    case "serve": return ["serve", a[1] ? { siteId: a[0] ?? "", httpsPort: Number(a[1]) } : { siteId: a[0] ?? "" }];
+    case "unserve": return ["unserve", { siteId: a[0] ?? "" }];
     case "token-check": return ["full", {}]; // cheap authenticated round-trip
     default: return [null, null];
   }
