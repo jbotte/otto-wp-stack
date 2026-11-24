@@ -3,7 +3,8 @@
 Every step below is chat/app driven. If a step seems to need a terminal
 command, that is a bug in this plugin — fix the plugin, don't document around
 it. The only things the owner ever touch are **approval cards** and (once, if
-tailscale serve is wanted) a single operator grant on the host.
+HTTPS via tailscale serve is wanted) a single operator grant on the host —
+plain-HTTP tailnet exposure (section 5) needs neither.
 
 ## 1. Install + enable
 
@@ -79,7 +80,27 @@ one-time fix for the device operator:
 After that grant, serve/unserve work from chat for good. Until then the error
 also prints the owner-side single command equivalent.
 
-## 5. Daily use
+## 5. Expose a site on the tailnet (no operator grant)
+
+Owner says: *"Expose the demo site on the tailnet."* → agent calls
+`wp_stack_expose(siteId)` (dashboard **Expose** button sends the same). The
+tool resolves this Otto's Tailscale IPv4 + MagicDNS name, re-binds the site's
+own `php -S` from loopback to the Tailscale IP (the stale loopback server is
+reaped by ownership first) and updates WordPress `siteurl`/`home` to
+`http://<magicdns>:<sitePort>`; the registry records `exposed`/`exposeUrl`.
+Any tailnet device (e.g. the owner's Mac) opens the site there over plain
+HTTP. **No tailscale mutation happens**, so unlike serve this needs no
+operator grant — it is the path to use on Ottos where tailscaled denies
+serve config changes. Requirements: tailscale up, and the site not currently
+served (`wp_stack_unserve` first). A failed expose rolls the site back to
+loopback + local URLs completely.
+
+`wp_stack_unexpose(siteId)` reverses it: local `siteurl`/`home` restored, the
+server re-bound to the `bindHost` config (`127.0.0.1` by default, `tailnet`,
+or an IPv4 — whitelisted). `wp_stack_serve` refuses while a site is exposed
+or `bindHost` is off loopback; expose refuses while served.
+
+## 6. Daily use
 
 All through the board or chat: create sites (`wp_stack_create` — one-time admin
 password is shown once, in chat), start/stop/restart (`wp_stack_site_action`),

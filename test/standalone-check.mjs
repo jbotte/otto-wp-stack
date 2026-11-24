@@ -30,8 +30,11 @@ import {
   opBootstrapRun,
   opServe,
   opUnserve,
+  opExpose,
+  opUnexpose,
   portOpen,
 } from "../dist/stack.js";
+import { resolveBindHost } from "../dist/engine.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..");
@@ -157,6 +160,18 @@ if (created.ok && created.site) {
   check("guards: unknown site refused", unknown.ok === false, "");
   const badPort = await opServe(cfg, TEST_ID, 99);
   check("guards: serve refuses httpsPort outside the whitelist", badPort.ok === false && /integer in/.test(String(badPort.error)), String(badPort.error ?? "").slice(0, 90));
+  const exposeUnknown = await opExpose(cfg, "no-such-site-xyz");
+  check("guards: expose refuses unknown site", exposeUnknown.ok === false, String(exposeUnknown.error ?? ""));
+
+  // bindHost is whitelisted: loopback / tailnet / IPv4 only — never hostnames,
+  // since the value flows into the `php -S <addr>:<port>` argv.
+  const bhLoop = await resolveBindHost("127.0.0.1");
+  check("bindHost: loopback resolves", bhLoop.ok === true && bhLoop.host === "127.0.0.1", JSON.stringify(bhLoop));
+  const bhName = await resolveBindHost("evil.example.com");
+  check("bindHost: hostnames refused", bhName.ok === false && /bindHost/.test(String(bhName.error ?? "")), String(bhName.error ?? "").slice(0, 80));
+  const bhOctet = await resolveBindHost("100.1024.1.1");
+  check("bindHost: octet-overflow IPv4 refused", bhOctet.ok === false, String(bhOctet.error ?? "").slice(0, 80));
+
   const noConfirm = await opDeleteSite(cfg, TEST_ID, "wrong");
   check("guards: delete requires exact confirm", noConfirm.ok === false, "");
 
@@ -172,6 +187,44 @@ if (created.ok && created.site) {
     check("unserve: rule removed + local url restored", Boolean(unserved.ok) && String(unserved.url ?? "").startsWith("http://127.0.0.1:"), String(unserved.url ?? unserved.error));
   } else {
     check("serve: denial returns an actionable tailscale error", /tailscale/i.test(String(served.error ?? "")) && /(operator|sudo|yourself)/i.test(String(served.error ?? "")), String(served.error ?? "").slice(0, 140));
+  }
+
+  // expose/unexpose: plain-HTTP tailnet exposure. When tailscale is up this
+  // exercises the full round-trip (php -S re-bound to the tailscale IP, URL
+  // rewrite, reachability, rollback-safe unexpose); when tailscale is down or
+  // unreachable it must answer with an actionable error and leave the site
+  // serving on loopback. Both branches are passes.
+  const exposed = await opExpose(cfg, TEST_ID);
+  if (exposed.ok) {
+    const eUrl = String(exposed.url ?? "");
+    check("expose: tailnet url minted for the site", /^http:\/\/[a-z0-9.-]+:\d+$/.test(eUrl) && eUrl.endsWith(":" + port), eUrl);
+    const rowE = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    check("expose: registry marks it exposed", rowE?.exposed === true && Boolean(rowE?.exposeUrl), JSON.stringify({ exposed: rowE?.exposed, exposeUrl: rowE?.exposeUrl }));
+    const ts = await resolveBindHost("tailnet");
+    if (ts.ok) {
+      check("expose: site reachable on the tailscale address", await portOpen(ts.host, port, 1500), ts.host + ":" + port);
+      const thttp = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "20", `http://${ts.host}:${port}/`], { encoding: "utf8" });
+      check("expose: homepage answers on the tailscale address", thttp === "200" || thttp === "301", `http ${thttp}`);
+    } else {
+      check("expose: tailscale IP resolvable after successful expose", false, String(ts.error));
+    }
+    const againE = await opExpose(cfg, TEST_ID);
+    check("expose: idempotent when already exposed", againE.ok === true && /already exposed/.test(String(againE.result)), String(againE.result ?? againE.error));
+    const serveWhileExposed = await opServe(cfg, TEST_ID);
+    check("guards: serve refuses an exposed site", serveWhileExposed.ok === false && /unexpose/i.test(String(serveWhileExposed.error)), String(serveWhileExposed.error ?? "").slice(0, 90));
+    const unex = await opUnexpose(cfg, TEST_ID);
+    check("unexpose: local url restored", Boolean(unex.ok) && String(unex.url ?? "").startsWith("http://127.0.0.1:"), String(unex.url ?? unex.error));
+    const rowU = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    check("unexpose: registry flag cleared", !rowU?.exposed && !rowU?.exposeUrl, JSON.stringify({ exposed: rowU?.exposed, exposeUrl: rowU?.exposeUrl }));
+    const backUp = await portOpen("127.0.0.1", port, 1500);
+    check("unexpose: site back on loopback", backUp, `port ${port}`);
+    const againU = await opUnexpose(cfg, TEST_ID);
+    check("unexpose: idempotent when not exposed", againU.ok === true && /not exposed/.test(String(againU.result)), String(againU.result ?? againU.error));
+  } else {
+    check("expose: failure is actionable (tailscale down?)", /tailscale|unserve/i.test(String(exposed.error ?? "")), String(exposed.error ?? "").slice(0, 140));
+    const rtRow = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    check("expose: rollback left no exposed flag", !rtRow?.exposed, JSON.stringify({ exposed: rtRow?.exposed }));
+    check("expose: rollback left the site on loopback", await portOpen("127.0.0.1", port, 1500), "");
   }
 
   const del = await opDeleteSite(cfg, TEST_ID, TEST_ID);

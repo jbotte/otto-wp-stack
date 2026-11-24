@@ -29,6 +29,8 @@ function translate(argv) {
     case "db-action": return ["db-action", { action: a[0] ?? "" }];
     case "serve": return ["serve", a[1] ? { siteId: a[0] ?? "", httpsPort: Number(a[1]) } : { siteId: a[0] ?? "" }];
     case "unserve": return ["unserve", { siteId: a[0] ?? "" }];
+    case "expose": return ["expose", { siteId: a[0] ?? "" }];
+    case "unexpose": return ["unexpose", { siteId: a[0] ?? "" }];
     case "token-check": return ["full", {}];
     default: return [null, null];
   }
@@ -179,7 +181,7 @@ export default function App() {
     if (!mounted.current) return;
     setBusy("");
     if (after) after(j);
-    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action", "serve", "unserve"].includes(args[0])) {
+    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action", "serve", "unserve", "expose", "unexpose"].includes(args[0])) {
       const patch = { ts: j.ts };
       if (j.status) patch.status = j.status;
       if (j.sites) patch.sites = j.sites;
@@ -401,6 +403,7 @@ export default function App() {
                   <span className="o-muted" style={{ fontSize: 12 }}>{s.id} · :{s.port} · db {s.db}</span>
                 </div>
                 <Badge ok={!!s.running}>{s.running ? "running" : "stopped"}</Badge>
+                {s.exposed ? <Badge ok>exposed</Badge> : null}
               </div>
               <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 <a className="o-btn" style={{ textDecoration: "none", fontSize: 12 }} href={s.url} target="_blank" rel="noreferrer">Open</a>
@@ -411,8 +414,16 @@ export default function App() {
                 {s.running && <button className="o-btn" disabled={!!busy} onClick={() => run("restart", ["site-action", s.id, "restart"])}>Restart</button>}
                 {s.servePort ? (
                   <button className="o-btn" disabled={!!busy} onClick={() => run("unserve", ["unserve", s.id])}>Unserve</button>
+                ) : s.exposed ? (
+                  <>
+                    <a className="o-btn" style={{ textDecoration: "none", fontSize: 12, borderColor: "var(--accent)" }} href={s.exposeUrl || s.url} target="_blank" rel="noreferrer">Open tailnet</a>
+                    <button className="o-btn" disabled={!!busy} onClick={() => run("unexpose", ["unexpose", s.id])}>Unexpose</button>
+                  </>
                 ) : (
-                  <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
+                  <>
+                    <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
+                    <button className="o-btn" disabled={!!busy} onClick={() => run("expose", ["expose", s.id])} title="Expose on the tailnet over plain HTTP — binds the site to this Otto's Tailscale IP; no operator grant needed">Expose</button>
+                  </>
                 )}
                 <button className="o-btn" disabled={!!busy} onClick={() => run("details", ["details", s.id], (j) => { if (j.ok) setData((d) => ({ ...(d ?? {}), details: { id: s.id, details: j.details } })); })}>Details</button>
                 {confirmDel[s.id] === 1 ? (
@@ -473,6 +484,7 @@ export default function App() {
             <Row label="WP-CLI">{rt?.wpCli?.installed ? <Badge ok>installed</Badge> : <Badge ok={false}>missing</Badge>}</Row>
             <Row label="MariaDB">{rt?.mariadb?.installed ? <Badge ok>{rt.mariadb.version ?? "installed"}</Badge> : <Badge ok={false}>missing</Badge>}</Row>
             <Row label="db credential">{rt?.dbCredential ? <Badge ok>present</Badge> : <Badge ok={false}>missing</Badge>}</Row>
+            <Row label="sites bind to"><span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{status?.bindHost ?? "127.0.0.1"}</span>{sites.some((s) => s.exposed) ? <span className="o-muted" style={{ fontSize: 11 }}> · exposed sites use the tailnet IP</span> : null}</Row>
           </div>
           <div className="o-card" style={{ marginBottom: 8 }}>
             <b style={{ fontSize: 14 }}>Database (stack-owned)</b>
@@ -497,7 +509,7 @@ export default function App() {
               </Row>
             ))}
             <div className="o-muted" style={{ fontSize: 12, marginTop: 6 }}>
-              Tap <b>Serve</b> on a site card (or ask Otto: <i>“serve the demo site”</i>) to expose it over HTTPS via the plugin's wp_stack_serve tool — no terminal needed. If tailscale denies the change, the error names the one-time operator grant (<code style={{ fontFamily: "var(--font-mono)" }}>sudo tailscale set --operator=&lt;agent user&gt;</code>).
+              Tap <b>Serve</b> on a site card (or ask Otto: <i>“serve the demo site”</i>) to expose it over HTTPS via the plugin's wp_stack_serve tool — no terminal needed. If tailscale denies the change, the error names the one-time operator grant (<code style={{ fontFamily: "var(--font-mono)" }}>sudo tailscale set --operator=&lt;agent user&gt;</code>). Without that grant, tap <b>Expose</b> instead: it binds the site to this Otto's Tailscale IP and repoints URLs at <code style={{ fontFamily: "var(--font-mono)" }}>http://&lt;magicdns&gt;:&lt;port&gt;</code> — reachable from tailnet devices (your Mac), no grant needed.
             </div>
           </div>
         </div>

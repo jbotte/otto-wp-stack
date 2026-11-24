@@ -14,7 +14,9 @@
       "wp_stack_db",
       "wp_stack_bootstrap",
       "wp_stack_serve",
-      "wp_stack_unserve"
+      "wp_stack_unserve",
+      "wp_stack_expose",
+      "wp_stack_unexpose"
     ]
   },
   "activation": {
@@ -61,6 +63,10 @@
         "minimum": 1024,
         "maximum": 65535,
         "description": "Last HTTPS port wp_stack_serve may allocate (default 8499)."
+      },
+      "bindHost": {
+        "type": "string",
+        "description": "Address site php servers bind to: 127.0.0.1 (default), tailnet (this Otto's Tailscale IPv4, reachable from tailnet devices) or a literal IPv4. wp_stack_expose binds exposed sites to the tailnet IP regardless; wp_stack_serve needs loopback."
       },
       "apiToken": {
         "type": "string",

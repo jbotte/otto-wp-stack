@@ -28,7 +28,7 @@ import * as path from "node:path";
 import { Type } from "typebox";
 import { defineFeatureContract } from "openclaw/plugin-sdk/feature-contract";
 import { defineFeaturePlugin } from "openclaw/plugin-sdk/feature-plugin";
-import { DEFAULTS, opBootstrap, opBootstrapRun, opCreate, opDbAction, opDeleteSite, opDetails, opFull, opProbe, opServe, opSiteAction, opSites, opUnserve, resolveConfig, serveRules, } from "./stack.js";
+import { DEFAULTS, opBootstrap, opBootstrapRun, opCreate, opDbAction, opDeleteSite, opDetails, opExpose, opFull, opProbe, opServe, opSiteAction, opSites, opUnexpose, opUnserve, resolveConfig, serveRules, } from "./stack.js";
 // ---------------------------------------------------------------------------
 // Contract
 // ---------------------------------------------------------------------------
@@ -142,6 +142,20 @@ const contract = defineFeatureContract({
             output: OUT,
             tool: { name: "wp_stack_unserve" },
         },
+        expose: {
+            kind: "action",
+            description: "Expose a site to tailnet devices over plain HTTP: binds its own php server to this Otto's Tailscale IPv4 and rewrites WordPress siteurl/home to http://<magicdns>:<sitePort>. Needs no tailscale operator grant (unlike wp_stack_serve) — only tailscale up. Reversible with wp_stack_unexpose. A served site must be unserved first.",
+            input: Type.Object({ siteId: Type.String({ minLength: 1, maxLength: 64 }) }),
+            output: OUT,
+            tool: { name: "wp_stack_expose" },
+        },
+        unexpose: {
+            kind: "action",
+            description: "Undo wp_stack_expose: restore the site's local http://127.0.0.1:<port> siteurl/home and bind its server back to the bindHost config.",
+            input: Type.Object({ siteId: Type.String({ minLength: 1, maxLength: 64 }) }),
+            output: OUT,
+            tool: { name: "wp_stack_unexpose" },
+        },
         "reveal-token": {
             kind: "action",
             description: "Print the HTTP API token so the owner can paste it into the dashboard app settings.",
@@ -170,9 +184,10 @@ const CONFIG_SCHEMA = Type.Object({
     portMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last site port (default 8199)." })),
     servePortMin: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "First HTTPS port wp_stack_serve may allocate (default 8443)." })),
     servePortMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last HTTPS port wp_stack_serve may allocate (default 8499)." })),
+    bindHost: Type.Optional(Type.String({ description: 'Address site php servers bind to: "127.0.0.1" (default), "tailnet" (this Otto\'s Tailscale IPv4) or a literal IPv4. wp_stack_expose binds exposed sites to the tailnet IP regardless; wp_stack_serve needs loopback.' })),
     apiToken: Type.Optional(Type.String({ minLength: 16, description: "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory." })),
 });
-const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve"]);
+const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve", "expose", "unexpose"]);
 /** HTTP alias table so curl/scripts can use short op names. */
 const HTTP_ALIASES = {
     full: "full",
@@ -188,8 +203,10 @@ const HTTP_ALIASES = {
     "db-action": "db-action",
     serve: "serve",
     unserve: "unserve",
+    expose: "expose",
+    unexpose: "unexpose",
 };
-const PLUGIN_VERSION = "0.3.7";
+const PLUGIN_VERSION = "0.3.8";
 export default (() => {
     const feature = defineFeaturePlugin({
         contract,
@@ -270,6 +287,10 @@ export default (() => {
                     }
                     case "unserve":
                         return opUnserve(cfg, String(a.siteId ?? ""));
+                    case "expose":
+                        return opExpose(cfg, String(a.siteId ?? ""));
+                    case "unexpose":
+                        return opUnexpose(cfg, String(a.siteId ?? ""));
                     case "reveal-token":
                         return { ok: true, token: loadOrMintToken() };
                     case "rotate-token": {
@@ -457,6 +478,8 @@ export default (() => {
                 "db-action": async ({ action }) => invokeAndSignal("db-action", { action }),
                 serve: async ({ siteId, httpsPort }) => invokeAndSignal("serve", { siteId, httpsPort }),
                 unserve: async ({ siteId }) => invokeAndSignal("unserve", { siteId }),
+                expose: async ({ siteId }) => invokeAndSignal("expose", { siteId }),
+                unexpose: async ({ siteId }) => invokeAndSignal("unexpose", { siteId }),
                 "reveal-token": async () => invoke("reveal-token", {}),
                 "rotate-token": async () => invoke("rotate-token", {}),
             };

@@ -28,6 +28,8 @@ type Site = {
   running?: boolean;
   serveUrl?: string;
   servePort?: number;
+  exposed?: boolean;
+  exposeUrl?: string;
 };
 type Data = {
   status?: any;
@@ -218,6 +220,7 @@ export default function App() {
                 <div style={{ fontWeight: 600 }}>{s.name || s.id}</div>
                 <div className="o-row" style={{ gap: 6 }}>
                   {s.serveUrl ? <Badge ok={true}>served</Badge> : null}
+                  {s.exposed ? <Badge ok={true}>exposed</Badge> : null}
                   <Badge ok={!!s.running}>{s.running ? "running" : "stopped"}</Badge>
                 </div>
               </div>
@@ -226,6 +229,7 @@ export default function App() {
                 {s.port ? ` · :${s.port}` : ""}
                 {s.url ? ` · ${s.url}` : ""}
                 {s.serveUrl ? ` · ${s.serveUrl}` : ""}
+                {s.exposeUrl ? ` · ${s.exposeUrl}` : ""}
               </div>
               <div className="o-row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {s.running ? (
@@ -249,10 +253,19 @@ export default function App() {
                   <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("remove the HTTPS exposure of", s.id)}>
                     Unserve
                   </button>
-                ) : (
-                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
-                    Serve
+                ) : s.exposed ? (
+                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("unexpose (wp_stack_unexpose)", s.id)}>
+                    Unexpose
                   </button>
+                ) : (
+                  <>
+                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
+                      Serve
+                    </button>
+                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose on the tailnet with wp_stack_expose", s.id)}>
+                      Expose
+                    </button>
+                  </>
                 )}
                 {(confirmDel[s.id + "_typed"] || "") === s.id ? (
                   <button

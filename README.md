@@ -20,6 +20,8 @@ install card → enable → one sentence to Otto per step.
                                                           │  own registry: sites.json                    │
                                                           │  own sites:    sites/<id>/public on :8100+   │
                                                           │  own HTTPS:    wp_stack_serve (tailscale)    │
+                                                          │  tailnet:    wp_stack_expose (bind :port     │
+                                                          │               on the Tailscale IP)           │
                                                           └──────────────────────────────────────────────┘
 ```
 
@@ -57,6 +59,14 @@ taps **approval cards**.
    `wp_stack_serve` adds the Tailscale Serve rule and repoints WordPress
    `siteurl`/`home` at `https://<magicdns>:<port>`. *"Unserve the demo site"*
    reverses it. No tailscale command needed — see the note below.
+
+6. **Tailnet exposure (no operator grant needed)** — tell Otto:
+   > *"Expose the demo site on the tailnet."*
+   `wp_stack_expose` binds that site's own php server to this Otto's Tailscale
+   IP and repoints `siteurl`/`home` at `http://<magicdns>:<sitePort>` — any
+   tailnet device (your Mac) can open it over plain HTTP, with **no tailscale
+   mutation at all**, so it works even before the operator grant that
+   `wp_stack_serve` needs. *"Unexpose the demo site"* reverses it.
 
 Then just use the board: Sites (start/stop/restart/details/delete), New site,
 System (db start/stop, HTTPS rules). See **[SETUP.md](SETUP.md)** for the
@@ -101,6 +111,30 @@ its rule.
 > error also prints the owner-side single command equivalent. Everything else
 > (runtime, sites, db, dashboards) works without it.
 
+### Tailnet exposure — `wp_stack_expose` / `wp_stack_unexpose`
+
+The complement to Serve for Ottos where the operator grant above has not been
+made: no serve config is touched at all. `wp_stack_expose(siteId)`
+
+1. resolves this Otto's Tailscale IPv4 + MagicDNS name (tailscale must be up),
+2. re-binds the site's own `php -S` from loopback to the Tailscale IP (php -S
+   binds one address; the old server is reaped by ownership first),
+3. updates WordPress `siteurl`/`home` to `http://<magicdns>:<sitePort>`,
+4. records `exposed`/`exposeUrl` in the site registry.
+
+Any tailnet peer (e.g. your Mac) then opens the site at that URL — plain HTTP
+on the site port, no certificate, no serve rule, **no operator grant**.
+`wp_stack_unexpose(siteId)` restores `http://127.0.0.1:<port>` and re-binds
+the server to the `bindHost` config. A failed expose rolls back completely.
+
+Exposed and served are mutually exclusive: each op refuses the other state,
+and `wp_stack_serve` also refuses while `bindHost` is set off loopback
+(tailscaled proxies to `127.0.0.1`). The `bindHost` config itself is
+whitelisted — `"127.0.0.1"` (default), `"tailnet"`, or a literal IPv4; it is
+the only config-influenced piece of the `php -S` argv and nothing else is
+accepted. Phone Otto apps cannot resolve tailnet names either — open exposed
+URLs from tailnet devices, same as served ones.
+
 ## What "standalone" means (testable claims)
 
 - The plugin reads/writes **only** its `stackRoot` folder (default
@@ -112,7 +146,9 @@ its rule.
   **3307**, reached as a stack-scoped mysql user whose grants are limited to
   `wps_%` databases. It never touches any other MySQL/MariaDB on the box.
 - Site servers are **its own child processes** (`runtime/php -S` on ports
-  8100–8199). It only ever signals processes verified as its own
+  8100–8199, bound to the whitelisted `bindHost` — loopback by default, this
+  Otto's Tailscale IPv4 while a site is exposed). It only ever signals
+  processes verified as its own
   (exe path + port + docroot + uid all match).
 - No systemd units, no root helpers, no other panels or worker scripts.
   `test/standalone-check.mjs` fails the build if any plugin/app file so much
@@ -135,7 +171,9 @@ otto-wp-stack-plugin/          ← the npm package (ClawHub: @lunarlyra/otto-wp-
 ## Daily use (the app)
 
 - **Sites** — Start/Stop/Restart/Details/Delete (type the id to confirm),
-  Open / WP Admin links, **Serve / Unserve** per site (Tailscale Serve HTTPS).
+  Open / WP Admin links, **Serve / Unserve** per site (Tailscale Serve HTTPS)
+  and **Expose / Unexpose** per site (plain-HTTP tailnet reach via the
+  Tailscale IP).
 - **New site** — creates its own `wps_*` database and its own PHP server and
   starts it; the one-time admin password is shown **once**.
 - **System** — runtime versions, the stack's own database (Start db / Stop db),
@@ -155,7 +193,9 @@ including both app templates and SETUP.md), then runs a live e2e: starts its
 own database, creates a real WordPress site through its own runtime, exercises
 start/stop/details/guards **and the serve/unserve round-trip** (or, when
 tailscaled denies agent-user mutations, that the denial comes back
-actionable), deletes it, and confirms nothing is left behind. Also verifies
+actionable) **and the expose/unexpose round-trip** (or, when tailscale is
+down, that the failure is actionable and rolled back), deletes it, and
+confirms nothing is left behind. Also verifies
 the self-bootstrap op is idempotent and that every contract tool is listed in
 the manifest (`contracts.tools`) — the guard against the 0.3.6 bootstrap bug.
 
@@ -168,6 +208,7 @@ the manifest (`contracts.tools`) — the guard against the 0.3.6 bootstrap bug.
 | `dbUser` | `wp_stack` | stack-owned mysql user (grants: `wps_%` only) |
 | `portMin` / `portMax` | `8100` / `8199` | site port range |
 | `servePortMin` / `servePortMax` | `8443` / `8499` | HTTPS ports `wp_stack_serve` may allocate |
+| `bindHost` | `127.0.0.1` | site php bind address: `127.0.0.1`, `tailnet` (this Otto's Tailscale IPv4), or an IPv4; exposed sites always use the tailnet IP |
 | `apiToken` | *(auto)* | bearer for `/otto-wp-stack/api`; auto-minted to `.api-token` |
 
 ## Security posture
@@ -176,7 +217,9 @@ the manifest (`contracts.tools`) — the guard against the 0.3.6 bootstrap bug.
   token, compared timing-safe, never logged and never returned by reads.
 - Site ids: `^[a-z0-9][a-z0-9-]{0,63}$`; actions/ports strictly whitelisted;
   serve targets are always derived from the registry (never caller-supplied)
-  and serve ports must be integers inside `servePortMin..servePortMax`.
+  and serve ports must be integers inside `servePortMin..servePortMax`;
+  `bindHost` is whitelisted (`127.0.0.1` / `tailnet` / IPv4) before it ever
+  reaches the `php -S` argv.
 - Process control is ownership-verified (exe realpath + port + docroot + uid);
   foreign processes on a stack port are refused, never killed.
 - The mysql user cannot see any database outside its `wps_` prefix.
@@ -216,6 +259,21 @@ Publishing to ClawHub is the owner's action.
 
 ## Changelog
 
+- **0.3.8** — Tailnet reachability without the operator grant.
+  - **New:** `wp_stack_expose` / `wp_stack_unexpose` agent tools (plus HTTP
+    `expose`/`unexpose` ops and dashboard **Expose/Unexpose** buttons) — binds
+    a site's own php server to this Otto's Tailscale IPv4 and rewrites
+    WordPress `siteurl`/`home` to `http://<magicdns>:<sitePort>`, so any
+    tailnet device can open the site over plain HTTP. No tailscale mutation
+    and no operator grant — the thing `wp_stack_serve` cannot do on ungranted
+    Ottos. Exposed and served are mutually exclusive (each refuses the other,
+    and serve refuses while `bindHost` is off loopback); unexpose restores the
+    loopback bind and the local URL; a failed expose rolls back completely.
+  - **New:** `bindHost` config for site php servers — `"127.0.0.1"` (default),
+    `"tailnet"` (this Otto's Tailscale IPv4) or a literal IPv4; the address is
+    whitelisted before it reaches the `php -S` argv, stale servers on the old
+    bind are reaped by ownership on start, and `wp_stack_sites` now reports
+    each site's bound address (`bindHost`/`url`).
 - **0.3.7** — Zero-command deploy, end to end.
   - **Fix:** `wp_stack_bootstrap` added to `contracts.tools` — it was
     registered in the contract but gated out of the manifest, so no agent

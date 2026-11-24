@@ -40,6 +40,13 @@ export type StackConfig = {
   /** HTTPS ports wp_stack_serve may allocate for Tailscale Serve rules */
   servePortMin: number;
   servePortMax: number;
+  /**
+   * Address site php servers bind to: "127.0.0.1" (default), "tailnet"
+   * (this Otto's Tailscale IPv4 — reachable from tailnet devices) or a
+   * literal IPv4. wp_stack_expose forces the tailnet bind per site
+   * regardless of this setting; Tailscale Serve needs loopback.
+   */
+  bindHost: string;
   /** derived paths (filled by resolveConfig when empty) */
   phpBin: string;
   wpCli: string;
@@ -78,6 +85,7 @@ export const DEFAULTS: StackConfig = {
   portMax: 8199,
   servePortMin: 8443,
   servePortMax: 8499,
+  bindHost: "127.0.0.1",
   phpBin: "",
   wpCli: "",
   mariadbDir: "",
@@ -198,6 +206,10 @@ export type Site = {
   /** set while the site is exposed over HTTPS via Tailscale Serve */
   servePort?: number;
   serveUrl?: string;
+  /** set while the site is exposed on the tailnet via wp_stack_expose
+   *  (php -S binds to this Otto's Tailscale IPv4, URLs at http://<magicdns>:<port>) */
+  exposed?: boolean;
+  exposeUrl?: string;
 };
 
 export function loadRegistry(cfg: StackConfig): Site[] {
@@ -689,6 +701,49 @@ export async function tailscaleDnsName(): Promise<{ ok: true; dns: string } | { 
   }
 }
 
+const IPV4_RE = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+
+/** Strict dotted-quad check (octets 0-255). */
+export function isIpv4(s: string): boolean {
+  const m = IPV4_RE.exec(s);
+  return !!m && m.slice(1).every((o) => Number(o) <= 255);
+}
+
+let tailnetIpCache: { ip: string; at: number } | null = null;
+
+/** This device's Tailscale IPv4 (cached ~30 s — listSites probes every site). */
+export async function tailscaleIPv4(ttlMs = 30_000): Promise<{ ok: true; ip: string } | { ok: false; error: string }> {
+  if (tailnetIpCache && Date.now() - tailnetIpCache.at < ttlMs) return { ok: true, ip: tailnetIpCache.ip };
+  const st = await run(["tailscale", "ip", "-4"], 15_000);
+  if (st.code !== 0) return { ok: false, error: (st.stderr || st.stdout || "tailscale ip failed").replace(/\s+/g, " ").slice(0, 150) };
+  const ip = st.stdout.split("\n").map((l) => l.trim()).find((l) => isIpv4(l)) ?? "";
+  if (!ip) return { ok: false, error: "tailscale reports no IPv4 address on this device" };
+  tailnetIpCache = { ip, at: Date.now() };
+  return { ok: true, ip };
+}
+
+/**
+ * Resolve the address a site server binds to (and is probed on):
+ * "127.0.0.1"/"localhost" → loopback, "tailnet" → this Otto's Tailscale IPv4,
+ * or a whitelisted literal IPv4. Everything else is refused — this string is
+ * the only config-influenced piece of the `php -S <addr>:<port>` argv.
+ */
+export async function resolveBindHost(want: string): Promise<{ ok: true; host: string } | { ok: false; error: string }> {
+  const v = String(want ?? "127.0.0.1").trim() || "127.0.0.1";
+  if (v === "127.0.0.1" || v === "localhost") return { ok: true, host: "127.0.0.1" };
+  if (v === "tailnet") {
+    const t = await tailscaleIPv4();
+    return t.ok ? { ok: true, host: t.ip } : { ok: false, error: `bindHost "tailnet" needs tailscale up: ${t.error}` };
+  }
+  if (isIpv4(v)) return { ok: true, host: v };
+  return { ok: false, error: `invalid bindHost "${v.slice(0, 60)}" — allowed: "127.0.0.1", "tailnet", or an IPv4 address` };
+}
+
+/** What a registry site should bind to now: exposed sites always take the tailnet IP. */
+export function siteBindWants(site: Site, cfg: StackConfig): string {
+  return site.exposed ? "tailnet" : cfg.bindHost;
+}
+
 /** Parse `tailscale serve status --json` into its rule list (throws on garbage). */
 export type ServeRule = { host: string; mount: string; target: string };
 
@@ -746,8 +801,14 @@ export async function wpCli(cfg: StackConfig, docroot: string, args: string[], t
   return run([cfg.phpBin, "-d", "memory_limit=1G", cfg.wpCli, `--path=${docroot}`, "--skip-plugins", "--skip-themes", ...args], timeoutMs);
 }
 
-/** All PIDs that are OUR php -S for this exact port + docroot. */
-export function siteProcesses(cfg: StackConfig, site: Site): number[] {
+/**
+ * All PIDs that are OUR php -S for this exact port + docroot, bound to one of
+ * `hosts` (loopback plus the configured/tailnet bind). `anyHost` relaxes the
+ * address filter — used only to reap an exposed site's server when its
+ * tailscale IP can no longer be resolved (tailscale down); ownership is
+ * still verified by exe realpath + port + docroot + uid.
+ */
+export function siteProcesses(cfg: StackConfig, site: Site, hosts: string[] = ["127.0.0.1"], anyHost = false): number[] {
   const found: number[] = [];
   let phpReal = "";
   try {
@@ -762,6 +823,7 @@ export function siteProcesses(cfg: StackConfig, site: Site): number[] {
     return found;
   }
   const myUid = process.getuid?.();
+  const wantAddr = `:${site.port}`;
   for (const p of fs.readdirSync("/proc")) {
     if (!/^\d+$/.test(p)) continue;
     try {
@@ -772,7 +834,9 @@ export function siteProcesses(cfg: StackConfig, site: Site): number[] {
       if (exe !== phpReal) continue;
       const i = cmdline.indexOf("-S");
       const t = cmdline.indexOf("-t");
-      if (i >= 0 && t >= 0 && cmdline[i + 1] === `127.0.0.1:${site.port}` && fs.realpathSync(cmdline[t + 1]) === docReal) {
+      const addr = i >= 0 ? cmdline[i + 1] ?? "" : "";
+      const host = addr.endsWith(wantAddr) ? addr.slice(0, -wantAddr.length) : "\u0000";
+      if (i >= 0 && t >= 0 && addr === `${host}${wantAddr}` && (anyHost || hosts.includes(host)) && fs.realpathSync(cmdline[t + 1]) === docReal) {
         found.push(Number(p));
       }
     } catch {
@@ -786,14 +850,32 @@ export async function startSite(cfg: StackConfig, site: Site): Promise<Out> {
   const rt = await runtimeStatus(cfg);
   if (!rt.php.installed) return bad("php runtime missing — run bin/wp-stack-bootstrap.sh");
   if (!fs.existsSync(site.docroot)) return bad("site files missing; delete and recreate the site");
-  if (await portOpen("127.0.0.1", site.port)) {
-    if (siteProcesses(cfg, site).length) return { ok: true, result: "already running" };
+  const bind = await resolveBindHost(siteBindWants(site, cfg));
+  if (!bind.ok) return bad(bind.error);
+  const host = bind.host;
+  const hosts = host === "127.0.0.1" ? ["127.0.0.1"] : ["127.0.0.1", host];
+  // A bindHost/expose change since the last start leaves a server on the old
+  // address — reap OUR stale server first so the site moves to the bind we
+  // want now (php -S binds one address; both could otherwise coexist).
+  const stale = siteProcesses(cfg, site, hosts.filter((h) => h !== host));
+  if (stale.length) {
+    for (const pid of stale) {
+      try {
+        process.kill(pid, "SIGTERM");
+      } catch {
+        /* race */
+      }
+    }
+    for (let i = 0; i < 20 && siteProcesses(cfg, site, hosts).length; i++) await sleep(150);
+  }
+  if (await portOpen(host, site.port)) {
+    if (siteProcesses(cfg, site, hosts).length) return { ok: true, result: "already running" };
     return bad(`port ${site.port} is held by a process this stack does not own — refusing`);
   }
   ensureDirs(cfg);
   const fd = fs.openSync(path.join(cfg.logsDir, `${site.id}.log`), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);
   try {
-    const p = spawn(cfg.phpBin, ["-d", "memory_limit=512M", "-S", `127.0.0.1:${site.port}`, "-t", site.docroot], {
+    const p = spawn(cfg.phpBin, ["-d", "memory_limit=512M", "-S", `${host}:${site.port}`, "-t", site.docroot], {
       detached: true,
       stdio: ["ignore", fd, fd],
       cwd: site.docroot,
@@ -809,16 +891,24 @@ export async function startSite(cfg: StackConfig, site: Site): Promise<Out> {
     fs.closeSync(fd);
   }
   for (let i = 0; i < 40; i++) {
-    if (await portOpen("127.0.0.1", site.port)) return { ok: true, result: "started" };
+    if (await portOpen(host, site.port)) return { ok: true, result: "started" };
     await sleep(150);
   }
   return bad("server did not start within 6s — check logs/" + site.id + ".log");
 }
 
 export async function stopSite(cfg: StackConfig, site: Site): Promise<Out> {
-  const pids = siteProcesses(cfg, site);
+  const bind = await resolveBindHost(siteBindWants(site, cfg));
+  const host = bind.ok ? bind.host : "127.0.0.1";
+  const hosts = host === "127.0.0.1" ? ["127.0.0.1"] : ["127.0.0.1", host];
+  // tailscale down while the site is exposed: we can't know the old bind IP,
+  // but leaving the server running would strand it — reap by exe+port+docroot.
+  const anyHost = !bind.ok && !!site.exposed;
+  const pids = siteProcesses(cfg, site, hosts, anyHost);
+  const portBusy = async () =>
+    (await portOpen("127.0.0.1", site.port, 300)) || (host !== "127.0.0.1" && (await portOpen(host, site.port, 300)));
   if (!pids.length) {
-    if (await portOpen("127.0.0.1", site.port)) return bad(`port ${site.port} held by a foreign process — refusing to kill it`);
+    if (!anyHost && (await portBusy())) return bad(`port ${site.port} held by a foreign process — refusing to kill it`);
     return { ok: true, result: "already stopped" };
   }
   for (const pid of pids) {
@@ -829,10 +919,10 @@ export async function stopSite(cfg: StackConfig, site: Site): Promise<Out> {
     }
   }
   for (let i = 0; i < 20; i++) {
-    if (!siteProcesses(cfg, site).length && !(await portOpen("127.0.0.1", site.port, 300))) return { ok: true, result: "stopped" };
+    if (!siteProcesses(cfg, site, hosts, anyHost).length && !(await portBusy())) return { ok: true, result: "stopped" };
     await sleep(150);
   }
-  for (const pid of siteProcesses(cfg, site)) {
+  for (const pid of siteProcesses(cfg, site, hosts, anyHost)) {
     try {
       process.kill(pid, "SIGKILL");
     } catch {
@@ -842,16 +932,21 @@ export async function stopSite(cfg: StackConfig, site: Site): Promise<Out> {
   return { ok: true, result: "stopped (forced)" };
 }
 
-export type SiteState = Site & { running: boolean; url: string };
+export type SiteState = Site & { running: boolean; url: string; bindHost: string };
 
 export async function listSites(cfg: StackConfig): Promise<SiteState[]> {
   const sites = loadRegistry(cfg);
+  // resolve each site's bind once up front (tailscale IP is cached, but this
+  // keeps it to one resolution per page even for big registries)
+  const binds = await Promise.all(sites.map((s) => resolveBindHost(siteBindWants(s, cfg))));
   return Promise.all(
-    sites.map(async (s) => ({
-      ...s,
-      running: (await portOpen("127.0.0.1", s.port, 400)) && siteProcesses(cfg, s).length > 0,
-      url: `http://127.0.0.1:${s.port}`,
-    })),
+    sites.map(async (s, i) => {
+      const bind = binds[i];
+      const host = bind.ok ? bind.host : "127.0.0.1";
+      const hosts = host === "127.0.0.1" ? ["127.0.0.1"] : ["127.0.0.1", host];
+      const running = (await portOpen(host, s.port, 400)) && siteProcesses(cfg, s, hosts, !bind.ok && !!s.exposed).length > 0;
+      return { ...s, running, url: `http://${host}:${s.port}`, bindHost: host };
+    }),
   );
 }
 

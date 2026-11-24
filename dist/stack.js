@@ -8,7 +8,7 @@
  * credentials never appear in return values or logs.
  */
 import * as os from "node:os";
-import { ACTIONS, SITE_ID_RE, bad, bootstrapProgressOf, createSite, dbPing, deleteSite, listSites, loadRegistry, portOpen, runtimeStatus, saveRegistry, serveStatusRules, siteDetails, startBootstrap, startDb, stopDb, startSite, stopSite, stamp, servePortsInUse, tailscaleDnsName, tailscaleServeSet, wpCli, } from "./engine.js";
+import { ACTIONS, SITE_ID_RE, bad, bootstrapProgressOf, createSite, dbPing, deleteSite, listSites, loadRegistry, portOpen, resolveBindHost, runtimeStatus, saveRegistry, serveStatusRules, siteDetails, startBootstrap, startDb, stopDb, startSite, stopSite, stamp, servePortsInUse, tailscaleDnsName, tailscaleIPv4, tailscaleServeSet, wpCli, } from "./engine.js";
 export { DEFAULTS, resolveConfig, SITE_ID_RE, portOpen, startBootstrap, bootstrapProgressOf } from "./engine.js";
 // ---------------------------------------------------------------------------
 // Status snapshot for the dashboard
@@ -26,6 +26,7 @@ export async function snapshot(cfg) {
         },
         sites: { total: sites.length, running },
         ports: { min: cfg.portMin, max: cfg.portMax },
+        bindHost: cfg.bindHost,
         host: { name: os.hostname(), user: process.getuid?.() === 0 ? "root(!)" : "agent" },
     };
 }
@@ -155,6 +156,18 @@ export async function opServe(cfg, siteId, httpsPort) {
     if (site.servePort && site.serveUrl) {
         return { ok: true, result: "already served", url: site.serveUrl, servePort: site.servePort, ts: stamp() };
     }
+    // Tailscale Serve proxies to 127.0.0.1 — a site bound elsewhere (tailnet
+    // bind or an exposed site) is unreachable to tailscaled, so refuse rather
+    // than mint a rule that silently 502s.
+    if (site.exposed) {
+        return bad("site is exposed on the tailnet (wp_stack_expose) — unexpose it first");
+    }
+    const cfgBind = await resolveBindHost(cfg.bindHost);
+    if (!cfgBind.ok)
+        return bad(cfgBind.error);
+    if (cfgBind.host !== "127.0.0.1") {
+        return bad(`bindHost is "${cfg.bindHost}" — Tailscale Serve proxies to 127.0.0.1, so serving needs bindHost "127.0.0.1" (or keep using wp_stack_expose)`);
+    }
     const rt = await runtimeStatus(cfg);
     if (!rt.php.installed || !rt.wpCli.installed) {
         return bad("runtime missing — ask Otto to “install the wp-stack runtime” (wp_stack_bootstrap) first");
@@ -243,6 +256,107 @@ async function servePortsInUseSafe() {
     catch {
         return new Set();
     }
+}
+// ---------------------------------------------------------------------------
+// Expose / Unexpose — plain-HTTP tailnet exposure of OUR sites.
+//
+// The complement to Serve for Ottos where the agent is not the tailscale
+// operator: the site's own php -S binds directly to this Otto's Tailscale
+// IPv4 (tailscale routes it from tailnet peers — no serve config mutation,
+// no operator grant) and WordPress siteurl/home follow
+// http://<magicdns>:<sitePort>. Exposed sites ignore cfg.bindHost and always
+// bind to the tailnet IP; unexpose returns them to it. A site is either
+// served (loopback + tailscale proxy) or exposed (tailnet bind), never both
+// — each op refuses the other state. A failed expose rolls back completely
+// (loopback bind + local URLs), mirroring the serve rollback.
+// ---------------------------------------------------------------------------
+export async function opExpose(cfg, siteId) {
+    if (!SITE_ID_RE.test(siteId))
+        return bad("invalid site id");
+    const sites = loadRegistry(cfg);
+    const site = sites.find((s) => s.id === siteId);
+    if (!site)
+        return bad("unknown site id");
+    if (site.exposed && site.exposeUrl) {
+        return { ok: true, result: "already exposed", url: site.exposeUrl, ts: stamp() };
+    }
+    if (site.servePort)
+        return bad("site is served over HTTPS (wp_stack_serve) — unserve it first");
+    const rt = await runtimeStatus(cfg);
+    if (!rt.php.installed || !rt.wpCli.installed) {
+        return bad("runtime missing — ask Otto to “install the wp-stack runtime” (wp_stack_bootstrap) first");
+    }
+    const dns = await tailscaleDnsName();
+    if (!dns.ok)
+        return bad("tailscale not available: " + dns.error);
+    const ip = await tailscaleIPv4();
+    if (!ip.ok)
+        return bad("tailscale not available: " + ip.error);
+    const url = `http://${dns.dns}:${site.port}`;
+    const local = `http://127.0.0.1:${site.port}`;
+    // startSite derives the bind from site.exposed — flip the flag (persisted
+    // first, so a crash mid-way leaves a self-describing registry) and move the
+    // server from loopback to the tailscale address.
+    site.exposed = true;
+    delete site.exposeUrl; // not reachable until the URL rewrite succeeds
+    saveRegistry(cfg, sites);
+    const st = await stopSite(cfg, site);
+    if (!st.ok) {
+        site.exposed = false;
+        saveRegistry(cfg, sites);
+        return st;
+    }
+    const sr = await startSite(cfg, site);
+    if (!sr.ok) {
+        site.exposed = false;
+        saveRegistry(cfg, sites);
+        await startSite(cfg, site); // best effort: bring it back on loopback
+        return bad(String(sr.error ?? "site did not bind to the tailscale address"));
+    }
+    const u1 = await wpCli(cfg, site.docroot, ["option", "update", "siteurl", url, "--allow-root"]);
+    const u2 = await wpCli(cfg, site.docroot, ["option", "update", "home", url, "--allow-root"]);
+    if (u1.code !== 0 || u2.code !== 0) {
+        site.exposed = false;
+        saveRegistry(cfg, sites);
+        await stopSite(cfg, site);
+        const rb = await startSite(cfg, site);
+        return bad("wp option update failed: " +
+            String(u1.stderr || u1.stdout || u2.stderr || u2.stdout || "wp option update error").slice(0, 180) +
+            (rb.ok ? ` (rolled back — site is back at ${local})` : " (site needs a restart)"));
+    }
+    site.exposeUrl = url;
+    saveRegistry(cfg, sites);
+    return { ok: true, url, exposed: true, site: { ...site }, sites: await listSites(cfg), ts: stamp() };
+}
+export async function opUnexpose(cfg, siteId) {
+    if (!SITE_ID_RE.test(siteId))
+        return bad("invalid site id");
+    const sites = loadRegistry(cfg);
+    const site = sites.find((s) => s.id === siteId);
+    if (!site)
+        return bad("unknown site id");
+    const local = `http://127.0.0.1:${site.port}`;
+    if (!site.exposed)
+        return { ok: true, result: "not exposed", url: local, ts: stamp() };
+    let warn = "";
+    const rt = await runtimeStatus(cfg);
+    if (rt.php.installed && rt.wpCli.installed) {
+        const u1 = await wpCli(cfg, site.docroot, ["option", "update", "siteurl", local, "--allow-root"]);
+        const u2 = await wpCli(cfg, site.docroot, ["option", "update", "home", local, "--allow-root"]);
+        if (u1.code !== 0 || u2.code !== 0) {
+            warn = " (wp options could not be restored — check the site's siteurl/home)";
+        }
+    }
+    site.exposed = false;
+    delete site.exposeUrl;
+    saveRegistry(cfg, sites);
+    const st = await stopSite(cfg, site);
+    if (!st.ok)
+        return bad("urls restored but the site did not stop cleanly: " + String(st.error ?? "") + " — ask Otto to restart it");
+    const sr = await startSite(cfg, site);
+    if (!sr.ok)
+        return bad("urls restored but the site did not restart: " + String(sr.error ?? ""));
+    return { ok: true, result: `unexposed — site is back at ${local}${warn}`, url: local, sites: await listSites(cfg), ts: stamp() };
 }
 /** Cheap liveness used by the dashboard probe button. */
 export async function opProbe(cfg) {
