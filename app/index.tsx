@@ -29,6 +29,8 @@ function translate(argv) {
     case "db-action": return ["db-action", { action: a[0] ?? "" }];
     case "serve": return ["serve", a[1] ? { siteId: a[0] ?? "", httpsPort: Number(a[1]) } : { siteId: a[0] ?? "" }];
     case "unserve": return ["unserve", { siteId: a[0] ?? "" }];
+    case "expose": return ["expose", { siteId: a[0] ?? "" }];
+    case "unexpose": return ["unexpose", { siteId: a[0] ?? "" }];
     case "token-check": return ["full", {}];
     default: return [null, null];
   }
@@ -179,7 +181,7 @@ export default function App() {
     if (!mounted.current) return;
     setBusy("");
     if (after) after(j);
-    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action", "serve", "unserve"].includes(args[0])) {
+    if (j.ok && ["full", "sites", "site-action", "create", "delete-site", "db-action", "serve", "unserve", "expose", "unexpose"].includes(args[0])) {
       const patch = { ts: j.ts };
       if (j.status) patch.status = j.status;
       if (j.sites) patch.sites = j.sites;
@@ -413,6 +415,12 @@ export default function App() {
                   <button className="o-btn" disabled={!!busy} onClick={() => run("unserve", ["unserve", s.id])}>Unserve</button>
                 ) : (
                   <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
+                )}
+                {s.exposedUrl && <a className="o-btn" style={{ textDecoration: "none", fontSize: 12, borderColor: "var(--accent)" }} href={s.exposedUrl} target="_blank" rel="noreferrer">Open tailnet</a>}
+                {s.bind ? (
+                  <button className="o-btn" disabled={!!busy} onClick={() => run("unexpose", ["unexpose", s.id])}>Unexpose</button>
+                ) : (
+                  !s.servePort && <button className="o-btn" disabled={!!busy} onClick={() => run("expose", ["expose", s.id])} title="Expose on the tailnet — http on the tailscale IP, no operator grant needed">Expose</button>
                 )}
                 <button className="o-btn" disabled={!!busy} onClick={() => run("details", ["details", s.id], (j) => { if (j.ok) setData((d) => ({ ...(d ?? {}), details: { id: s.id, details: j.details } })); })}>Details</button>
                 {confirmDel[s.id] === 1 ? (

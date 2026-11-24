@@ -28,6 +28,8 @@ type Site = {
   running?: boolean;
   serveUrl?: string;
   servePort?: number;
+  bind?: string;
+  exposedUrl?: string;
 };
 type Data = {
   status?: any;
@@ -226,6 +228,7 @@ export default function App() {
                 {s.port ? ` · :${s.port}` : ""}
                 {s.url ? ` · ${s.url}` : ""}
                 {s.serveUrl ? ` · ${s.serveUrl}` : ""}
+                {s.exposedUrl ? ` · ${s.exposedUrl}` : ""}
               </div>
               <div className="o-row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {s.running ? (
@@ -253,6 +256,17 @@ export default function App() {
                   <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
                     Serve
                   </button>
+                )}
+                {s.bind ? (
+                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("remove the tailnet exposure of (wp_stack_unexpose)", s.id)}>
+                    Unexpose
+                  </button>
+                ) : (
+                  !s.serveUrl && (
+                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose on the tailnet with wp_stack_expose", s.id)}>
+                      Expose
+                    </button>
+                  )
                 )}
                 {(confirmDel[s.id + "_typed"] || "") === s.id ? (
                   <button

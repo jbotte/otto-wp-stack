@@ -40,12 +40,14 @@ import {
   opDbAction,
   opDeleteSite,
   opDetails,
+  opExpose,
   opFull,
   opProbe,
   opServe,
   opSiteAction,
   opSites,
   opUnserve,
+  opUnexpose,
   resolveConfig,
   serveRules,
   type Out,
@@ -169,6 +171,21 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_unserve" },
     },
+    expose: {
+      kind: "action",
+      description:
+        "Expose a site on the tailnet without Tailscale Serve: binds its own php -S to the live tailscale IPv4 and points WordPress siteurl/home at http://<magicdns>:<sitePort>, so any tailnet device can open the site on its own registry port. No tailscaled mutation, no operator grant, no terminal. Plain HTTP — HTTPS stays the wp_stack_serve path; a site is either served or exposed, never both.",
+      input: Type.Object({ siteId: Type.String({ minLength: 1, maxLength: 64 }) }),
+      output: OUT,
+      tool: { name: "wp_stack_expose" },
+    },
+    unexpose: {
+      kind: "action",
+      description: "Undo wp_stack_expose: rebind the site's server to 127.0.0.1 and restore its local siteurl/home.",
+      input: Type.Object({ siteId: Type.String({ minLength: 1, maxLength: 64 }) }),
+      output: OUT,
+      tool: { name: "wp_stack_unexpose" },
+    },
     "reveal-token": {
       kind: "action",
       description: "Print the HTTP API token so the owner can paste it into the dashboard app settings.",
@@ -202,7 +219,7 @@ const CONFIG_SCHEMA = Type.Object({
   apiToken: Type.Optional(Type.String({ minLength: 16, description: "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory." })),
 });
 
-const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve"]);
+const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve", "expose", "unexpose"]);
 
 /** HTTP alias table so curl/scripts can use short op names. */
 const HTTP_ALIASES: Record<string, string> = {
@@ -219,9 +236,11 @@ const HTTP_ALIASES: Record<string, string> = {
   "db-action": "db-action",
   serve: "serve",
   unserve: "unserve",
+  expose: "expose",
+  unexpose: "unexpose",
 };
 
-const PLUGIN_VERSION = "0.3.7";
+const PLUGIN_VERSION = "0.3.8";
 
 export default (() => {
   const feature = defineFeaturePlugin<typeof contract>({
@@ -308,6 +327,10 @@ export default (() => {
           }
           case "unserve":
             return opUnserve(cfg, String(a.siteId ?? ""));
+          case "expose":
+            return opExpose(cfg, String(a.siteId ?? ""));
+          case "unexpose":
+            return opUnexpose(cfg, String(a.siteId ?? ""));
           case "reveal-token":
             return { ok: true, token: loadOrMintToken() };
           case "rotate-token": {
@@ -498,6 +521,8 @@ export default (() => {
         serve: async ({ siteId, httpsPort }: { siteId: string; httpsPort?: number }) =>
           invokeAndSignal("serve", { siteId, httpsPort }),
         unserve: async ({ siteId }: { siteId: string }) => invokeAndSignal("unserve", { siteId }),
+        expose: async ({ siteId }: { siteId: string }) => invokeAndSignal("expose", { siteId }),
+        unexpose: async ({ siteId }: { siteId: string }) => invokeAndSignal("unexpose", { siteId }),
         "reveal-token": async () => invoke("reveal-token", {}),
         "rotate-token": async () => invoke("rotate-token", {}),
       };

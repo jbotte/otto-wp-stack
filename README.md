@@ -101,6 +101,19 @@ its rule.
 > error also prints the owner-side single command equivalent. Everything else
 > (runtime, sites, db, dashboards) works without it.
 
+### Tailnet exposure without any grant — `wp_stack_expose` / `wp_stack_unexpose`
+
+Want a site from your phone or laptop on the tailnet but nobody on the device
+is a tailscale operator? No terminal is needed at all: `wp_stack_expose(siteId)`
+rebinds the site's **own** `php -S` to the tailscale IPv4 (resolved live —
+never `0.0.0.0`, so the LAN stays out) and repoints WordPress `siteurl`/`home`
+at `http://<magicdns>:<site port>`. Each site keeps its own registry port
+(portMin..portMax), so many sites expose independently. Plain HTTP on the
+tailnet only — use `wp_stack_serve` when you want HTTPS. A site is either
+served or exposed, never both: each tool refuses while the other mode is
+active and names the fix. `wp_stack_unexpose` restores the loopback bind and
+the local URLs.
+
 ## What "standalone" means (testable claims)
 
 - The plugin reads/writes **only** its `stackRoot` folder (default
@@ -135,7 +148,9 @@ otto-wp-stack-plugin/          ← the npm package (ClawHub: @lunarlyra/otto-wp-
 ## Daily use (the app)
 
 - **Sites** — Start/Stop/Restart/Details/Delete (type the id to confirm),
-  Open / WP Admin links, **Serve / Unserve** per site (Tailscale Serve HTTPS).
+  Open / WP Admin links, **Serve / Unserve** per site (Tailscale Serve HTTPS),
+  and **Expose / Unexpose** per site (tailnet HTTP on the site's own port —
+  no operator grant needed).
 - **New site** — creates its own `wps_*` database and its own PHP server and
   starts it; the one-time admin password is shown **once**.
 - **System** — runtime versions, the stack's own database (Start db / Stop db),
@@ -216,6 +231,8 @@ Publishing to ClawHub is the owner's action.
 
 ## Changelog
 
+- **0.3.8** — Tailnet exposure without the tailscale operator grant.
+  - **New:** `wp_stack_expose` / `wp_stack_unexpose` agent tools (plus HTTP `expose`/`unexpose` ops and dashboard Expose/Unexpose buttons) — a site's own `php -S` binds to the LIVE tailscale IPv4 (resolved from `tailscale status`, never 0.0.0.0) and WordPress `siteurl`/`home` follow to `http://<magicdns>:<site port>`, so any tailnet device can open the site on its own registry port. No tailscaled mutation, so it works without the one-time `sudo tailscale set --operator=…` grant. Plain HTTP — HTTPS stays the `wp_stack_serve` path, and the two are mutually exclusive per site (serve needs the loopback bind; both tools refuse with the fix). Failures roll the site back to 127.0.0.1 with its local URLs, and `standalone-check` now curls each site over its tailscale bind in the live e2e.
 - **0.3.7** — Zero-command deploy, end to end.
   - **Fix:** `wp_stack_bootstrap` added to `contracts.tools` — it was
     registered in the contract but gated out of the manifest, so no agent

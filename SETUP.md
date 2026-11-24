@@ -79,6 +79,13 @@ one-time fix for the device operator:
 After that grant, serve/unserve work from chat for good. Until then the error
 also prints the owner-side single command equivalent.
 
+**No-grant alternative (zero terminal):** `wp_stack_expose(siteId)` skips
+tailscale mutation entirely — the site's own `php -S` rebinds to the LIVE
+tailscale IPv4 (never `0.0.0.0`) and WordPress `siteurl`/`home` follow to
+`http://<magicdns>:<site port>`, plain HTTP, tailnet-only. `wp_stack_unexpose`
+restores the loopback bind + local URLs. A site is either served (HTTPS, needs
+the grant) or exposed (HTTP, needs nothing) — the tools guard against both.
+
 ## 5. Daily use
 
 All through the board or chat: create sites (`wp_stack_create` — one-time admin

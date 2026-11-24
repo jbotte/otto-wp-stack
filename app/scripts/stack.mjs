@@ -20,6 +20,8 @@
  *   db-action <start|stop>       token-check
  *   serve <site-id> [https-port]
  *   unserve <site-id>
+ *   expose <site-id>
+ *   unexpose <site-id>
  */
 import { readFileSync } from "node:fs";
 import * as path from "node:path";
@@ -59,6 +61,8 @@ function translate(argv) {
     case "db-action": return ["db-action", { action: a[0] ?? "" }];
     case "serve": return ["serve", a[1] ? { siteId: a[0] ?? "", httpsPort: Number(a[1]) } : { siteId: a[0] ?? "" }];
     case "unserve": return ["unserve", { siteId: a[0] ?? "" }];
+    case "expose": return ["expose", { siteId: a[0] ?? "" }];
+    case "unexpose": return ["unexpose", { siteId: a[0] ?? "" }];
     case "token-check": return ["full", {}]; // cheap authenticated round-trip
     default: return [null, null];
   }
