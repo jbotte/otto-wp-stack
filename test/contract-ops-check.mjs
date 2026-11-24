@@ -49,6 +49,26 @@ if (unknown.length) {
   process.exit(1);
 }
 
+// Every tool the contract declares (tool: { name: ... }) MUST be listed in
+// openclaw.plugin.json contracts.tools — the manifest gates which registered
+// tools agents actually receive (0.3.6 shipped wp_stack_bootstrap missing, so
+// no agent could install the runtime). Same in reverse: no phantom entries.
+const manifest = JSON.parse(readFileSync(path.join(here, "..", "openclaw.plugin.json"), "utf8"));
+const contractTools = [...contractBlock.matchAll(/tool:\s*\{\s*name:\s*"([a-z0-9_]+)"\s*\}/g)].map((m) => m[1]);
+if (contractTools.length === 0) {
+  console.error("FAIL  manifest: no tool names parsed from the contract — guard is broken");
+  process.exit(1);
+}
+const listedTools = Array.isArray(manifest?.contracts?.tools) ? manifest.contracts.tools : [];
+const missingTools = contractTools.filter((t) => !listedTools.includes(t));
+const staleTools = listedTools.filter((t) => !contractTools.includes(t));
+if (missingTools.length || staleTools.length) {
+  console.error(
+    `FAIL  manifest: contracts.tools out of sync — missing: ${missingTools.join(", ") || "-"}; stale: ${staleTools.join(", ") || "-"}`,
+  );
+  process.exit(1);
+}
+
 const pkg = JSON.parse(readFileSync(path.join(here, "..", "package.json"), "utf8"));
 const ver = src.match(/const PLUGIN_VERSION = "([^"]+)"/)?.[1];
 if (ver !== pkg.version) {
@@ -56,4 +76,4 @@ if (ver !== pkg.version) {
   process.exit(1);
 }
 
-console.log(`PASS  contract: ${keys.length} operation ids valid; app emits only known ops`);
+console.log(`PASS  contract: ${keys.length} operation ids valid; app emits only known ops; ${contractTools.length} tools in sync with the manifest`);

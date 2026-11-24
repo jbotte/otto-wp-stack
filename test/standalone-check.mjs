@@ -28,6 +28,8 @@ import {
   opDeleteSite,
   opDbAction,
   opBootstrapRun,
+  opServe,
+  opUnserve,
   portOpen,
 } from "../dist/stack.js";
 
@@ -74,6 +76,8 @@ const codeFiles = [
   "bin/wp-stack-bootstrap.sh",
   "app/index.tsx",
   "app/scripts/stack.mjs",
+  "console-app/index.tsx",
+  "SETUP.md",
   "../apps/wp-stack-next/scripts/stack.mjs",
   "../apps/wp-stack-next/index.tsx",
 ];
@@ -151,8 +155,24 @@ if (created.ok && created.site) {
   check("guards: invalid action refused", badAction.ok === false && /start\|stop\|restart/.test(String(badAction.error)));
   const unknown = await opSiteAction(cfg, "no-such-site-xyz", "start");
   check("guards: unknown site refused", unknown.ok === false, "");
+  const badPort = await opServe(cfg, TEST_ID, 99);
+  check("guards: serve refuses httpsPort outside the whitelist", badPort.ok === false && /integer in/.test(String(badPort.error)), String(badPort.error ?? "").slice(0, 90));
   const noConfirm = await opDeleteSite(cfg, TEST_ID, "wrong");
   check("guards: delete requires exact confirm", noConfirm.ok === false, "");
+
+  // serve/unserve: when the agent user is the tailscale operator this exercises
+  // the full round-trip; when tailscaled denies mutations (the default on Otto)
+  // it verifies the denial carries the actionable operator fix. Both are passes.
+  const served = await opServe(cfg, TEST_ID);
+  if (served.ok) {
+    check("serve: https url minted for the site", /^https:\/\/.+:\d+$/.test(String(served.url)), String(served.url));
+    const again = await opServe(cfg, TEST_ID);
+    check("serve: idempotent when already served", again.ok === true && /already served/.test(String(again.result)), String(again.result ?? again.error));
+    const unserved = await opUnserve(cfg, TEST_ID);
+    check("unserve: rule removed + local url restored", Boolean(unserved.ok) && String(unserved.url ?? "").startsWith("http://127.0.0.1:"), String(unserved.url ?? unserved.error));
+  } else {
+    check("serve: denial returns an actionable tailscale error", /tailscale/i.test(String(served.error ?? "")) && /(operator|sudo|yourself)/i.test(String(served.error ?? "")), String(served.error ?? "").slice(0, 140));
+  }
 
   const del = await opDeleteSite(cfg, TEST_ID, TEST_ID);
   check("delete: site removed (dir + db + registry)", Boolean(del.ok) && !(await portOpen("127.0.0.1", port, 600)), String(del.message ?? del.error));

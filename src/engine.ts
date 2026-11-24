@@ -37,6 +37,9 @@ export type StackConfig = {
   dbUser: string;
   portMin: number;
   portMax: number;
+  /** HTTPS ports wp_stack_serve may allocate for Tailscale Serve rules */
+  servePortMin: number;
+  servePortMax: number;
   /** derived paths (filled by resolveConfig when empty) */
   phpBin: string;
   wpCli: string;
@@ -73,6 +76,8 @@ export const DEFAULTS: StackConfig = {
   dbUser: "wp_stack",
   portMin: 8100,
   portMax: 8199,
+  servePortMin: 8443,
+  servePortMax: 8499,
   phpBin: "",
   wpCli: "",
   mariadbDir: "",
@@ -190,6 +195,9 @@ export type Site = {
   docroot: string;
   adminUser: string;
   createdAt: string;
+  /** set while the site is exposed over HTTPS via Tailscale Serve */
+  servePort?: number;
+  serveUrl?: string;
 };
 
 export function loadRegistry(cfg: StackConfig): Site[] {
@@ -657,6 +665,80 @@ export async function stopDb(cfg: StackConfig): Promise<Out> {
 }
 
 // ---------------------------------------------------------------------------
+// Tailscale Serve (HTTPS exposure for OUR sites)
+//
+// The plugin only ever touches serve rules whose target is one of its own
+// registered sites (127.0.0.1:<registered port>). Whether the agent user may
+// mutate serve config at all is decided by tailscaled: on Otto the agent is
+// not the tailscale operator by default, and every mutation answers
+// "Access denied: serve config denied" until the owner/operator runs
+//   sudo tailscale set --operator=<agent user>
+// once. Callers must surface that error verbatim-ish with the fix hint.
+// ---------------------------------------------------------------------------
+
+export async function tailscaleDnsName(): Promise<{ ok: true; dns: string } | { ok: false; error: string }> {
+  const st = await run(["tailscale", "status", "--json"], 15_000);
+  if (st.code !== 0) return { ok: false, error: (st.stderr || st.stdout || "tailscale status failed").slice(0, 150) };
+  try {
+    const j = JSON.parse(st.stdout) as { Self?: { DNSName?: string } };
+    const dns = String(j.Self?.DNSName ?? "").replace(/\.$/, "");
+    if (!dns) return { ok: false, error: "tailscale reports no MagicDNS name on this device" };
+    return { ok: true, dns };
+  } catch {
+    return { ok: false, error: "unexpected tailscale status output" };
+  }
+}
+
+/** Parse `tailscale serve status --json` into its rule list (throws on garbage). */
+export type ServeRule = { host: string; mount: string; target: string };
+
+export async function serveStatusRules(): Promise<ServeRule[] | null> {
+  const r = await run(["tailscale", "serve", "status", "--json"], 15_000);
+  if (r.code !== 0) return null;
+  try {
+    const cfgJson = JSON.parse(r.stdout) as { Web?: Record<string, { Handlers?: Record<string, { Proxy?: string; Text?: string }> }> };
+    const rules: ServeRule[] = [];
+    for (const [host, v] of Object.entries(cfgJson.Web ?? {})) {
+      for (const [mount, h] of Object.entries(v.Handlers ?? {})) {
+        rules.push({ host, mount, target: h.Proxy ?? h.Text ?? "other" });
+      }
+    }
+    return rules;
+  } catch {
+    return null;
+  }
+}
+
+/** HTTPS ports currently occupied by ANY serve rule on this box. */
+export async function servePortsInUse(): Promise<number[]> {
+  const rules = await serveStatusRules();
+  if (!rules) return [];
+  const ports = new Set<number>();
+  for (const rule of rules) {
+    const seg = rule.host.split(":").pop() ?? "";
+    const p = parseInt(seg, 10);
+    if (Number.isFinite(p)) ports.add(p);
+  }
+  return [...ports];
+}
+
+/** Add or remove OUR serve rule for a site (target is always our own 127.0.0.1 site port). */
+export async function tailscaleServeSet(
+  sitePort: number,
+  httpsPort: number,
+  add: boolean,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const target = `http://127.0.0.1:${sitePort}`;
+  // tailscale >=1.102 has no `serve remove` subcommand — `--bg=false <target>` deletes the handler.
+  const argv = add
+    ? ["tailscale", "serve", "--bg", `--https=${httpsPort}`, target]
+    : ["tailscale", "serve", "--bg=false", target];
+  const r = await run(argv, 30_000);
+  if (r.code === 0) return { ok: true };
+  return { ok: false, error: (r.stderr || r.stdout || `tailscale serve exit ${r.code}`).slice(0, 300) };
+}
+
+// ---------------------------------------------------------------------------
 // WP-CLI + site processes
 // ---------------------------------------------------------------------------
 
@@ -920,6 +1002,14 @@ export async function deleteSite(cfg: StackConfig, id: string, confirm: string):
   const site = sites.find((s) => s.id === id);
   if (!site) return bad("unknown site id");
   await stopSite(cfg, site);
+  // best-effort: never leave a serve rule pointing at a deleted site
+  let serveWarn = "";
+  if (site.servePort) {
+    const rm = await tailscaleServeSet(site.port, site.servePort, false);
+    if (!rm.ok) {
+      serveWarn = ` (tailscale serve rule for :${site.servePort} left behind — remove it: tailscale serve --bg=false http://127.0.0.1:${site.port})`;
+    }
+  }
   const drop = await mysqlSql(cfg, `DROP DATABASE IF EXISTS \`${site.db}\`;`);
   fs.rmSync(path.join(cfg.sitesDir, id), { recursive: true, force: true });
   saveRegistry(
@@ -928,5 +1018,5 @@ export async function deleteSite(cfg: StackConfig, id: string, confirm: string):
   );
   const list = await listSites(cfg);
   const warn = drop.code !== 0 ? " (database drop failed — check the db user)" : "";
-  return { ok: true, message: `Site ${id} deleted${warn}.`, sites: list, ts: stamp() };
+  return { ok: true, message: `Site ${id} deleted${warn}${serveWarn}.`, sites: list, ts: stamp() };
 }

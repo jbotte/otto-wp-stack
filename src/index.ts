@@ -42,8 +42,10 @@ import {
   opDetails,
   opFull,
   opProbe,
+  opServe,
   opSiteAction,
   opSites,
+  opUnserve,
   resolveConfig,
   serveRules,
   type Out,
@@ -149,6 +151,24 @@ const contract = defineFeatureContract({
       output: OUT,
       tool: { name: "wp_stack_db" },
     },
+    serve: {
+      kind: "action",
+      description:
+        "Expose a site over HTTPS via Tailscale Serve (tailscale serve --bg --https <port> http://127.0.0.1:<sitePort>) and point WordPress siteurl/home at the served URL. httpsPort is optional — free ports in servePortMin..servePortMax are auto-picked. If tailscale denies the change (agent is not the tailscale operator), the error carries the one-time fix.",
+      input: Type.Object({
+        siteId: Type.String({ minLength: 1, maxLength: 64 }),
+        httpsPort: Type.Optional(Type.Number({ minimum: 1, maximum: 65535 })),
+      }),
+      output: OUT,
+      tool: { name: "wp_stack_serve" },
+    },
+    unserve: {
+      kind: "action",
+      description: "Remove a site's Tailscale Serve rule and restore its local http://127.0.0.1:<port> siteurl/home.",
+      input: Type.Object({ siteId: Type.String({ minLength: 1, maxLength: 64 }) }),
+      output: OUT,
+      tool: { name: "wp_stack_unserve" },
+    },
     "reveal-token": {
       kind: "action",
       description: "Print the HTTP API token so the owner can paste it into the dashboard app settings.",
@@ -177,10 +197,12 @@ const CONFIG_SCHEMA = Type.Object({
   dbUser: Type.Optional(Type.String({ description: "Stack-owned MariaDB user (default wp_stack)." })),
   portMin: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "First site port (default 8100)." })),
   portMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last site port (default 8199)." })),
+  servePortMin: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "First HTTPS port wp_stack_serve may allocate (default 8443)." })),
+  servePortMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last HTTPS port wp_stack_serve may allocate (default 8499)." })),
   apiToken: Type.Optional(Type.String({ minLength: 16, description: "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory." })),
 });
 
-const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run"]);
+const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve"]);
 
 /** HTTP alias table so curl/scripts can use short op names. */
 const HTTP_ALIASES: Record<string, string> = {
@@ -195,9 +217,11 @@ const HTTP_ALIASES: Record<string, string> = {
   create: "create-site",
   "delete-site": "delete-site",
   "db-action": "db-action",
+  serve: "serve",
+  unserve: "unserve",
 };
 
-const PLUGIN_VERSION = "0.3.6";
+const PLUGIN_VERSION = "0.3.7";
 
 export default (() => {
   const feature = defineFeaturePlugin<typeof contract>({
@@ -276,6 +300,14 @@ export default (() => {
             return opDeleteSite(cfg, String(a.id ?? ""), String(a.confirm ?? ""));
           case "db-action":
             return opDbAction(cfg, String(a.action ?? ""));
+          case "serve": {
+            const raw = a.httpsPort;
+            const port =
+              typeof raw === "number" ? raw : typeof raw === "string" && raw.trim() !== "" ? Number(raw) : undefined;
+            return opServe(cfg, String(a.siteId ?? ""), port);
+          }
+          case "unserve":
+            return opUnserve(cfg, String(a.siteId ?? ""));
           case "reveal-token":
             return { ok: true, token: loadOrMintToken() };
           case "rotate-token": {
@@ -463,6 +495,9 @@ export default (() => {
         "delete-site": async ({ id, confirm }: { id: string; confirm: string }) =>
           invokeAndSignal("delete-site", { id, confirm }),
         "db-action": async ({ action }: { action: string }) => invokeAndSignal("db-action", { action }),
+        serve: async ({ siteId, httpsPort }: { siteId: string; httpsPort?: number }) =>
+          invokeAndSignal("serve", { siteId, httpsPort }),
+        unserve: async ({ siteId }: { siteId: string }) => invokeAndSignal("unserve", { siteId }),
         "reveal-token": async () => invoke("reveal-token", {}),
         "rotate-token": async () => invoke("rotate-token", {}),
       };

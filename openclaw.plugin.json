@@ -11,7 +11,10 @@
       "wp_stack_site_action",
       "wp_stack_create",
       "wp_stack_delete_site",
-      "wp_stack_db"
+      "wp_stack_db",
+      "wp_stack_bootstrap",
+      "wp_stack_serve",
+      "wp_stack_unserve"
     ]
   },
   "activation": {
@@ -46,6 +49,18 @@
         "minimum": 1024,
         "maximum": 65535,
         "description": "Last site port (default 8199)."
+      },
+      "servePortMin": {
+        "type": "integer",
+        "minimum": 1024,
+        "maximum": 65535,
+        "description": "First HTTPS port wp_stack_serve may allocate for Tailscale Serve rules (default 8443)."
+      },
+      "servePortMax": {
+        "type": "integer",
+        "minimum": 1024,
+        "maximum": 65535,
+        "description": "Last HTTPS port wp_stack_serve may allocate (default 8499)."
       },
       "apiToken": {
         "type": "string",
