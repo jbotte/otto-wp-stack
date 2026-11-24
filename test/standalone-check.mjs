@@ -30,6 +30,8 @@ import {
   opBootstrapRun,
   opServe,
   opUnserve,
+  opExpose,
+  opUnexpose,
   portOpen,
 } from "../dist/stack.js";
 
@@ -172,6 +174,35 @@ if (created.ok && created.site) {
     check("unserve: rule removed + local url restored", Boolean(unserved.ok) && String(unserved.url ?? "").startsWith("http://127.0.0.1:"), String(unserved.url ?? unserved.error));
   } else {
     check("serve: denial returns an actionable tailscale error", /tailscale/i.test(String(served.error ?? "")) && /(operator|sudo|yourself)/i.test(String(served.error ?? "")), String(served.error ?? "").slice(0, 140));
+  }
+
+  // expose/unexpose: tailnet exposure needs NO tailscaled mutation — when
+  // tailscale is up the real bind is exercised and the homepage fetched over
+  // the tailscale IP; when it is down the answer must be actionable.
+  const exposed = await opExpose(cfg, TEST_ID);
+  if (exposed.ok) {
+    check("expose: tailnet url minted", /^http:\/\/[^\s:]+:\d+$/.test(String(exposed.url)), String(exposed.url));
+    const bindIp = String(exposed.bind ?? "");
+    const viaIp = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "20", `http://${bindIp}:${port}/`], { encoding: "utf8" });
+    check("expose: homepage answers 200 on the tailscale bind", viaIp === "200", `http ${viaIp} @ ${bindIp}:${port}`);
+    const exposedRow = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    check(
+      "expose: registry records bind + exposed url + running",
+      exposedRow?.bind === bindIp && exposedRow?.exposedUrl === exposed.url && exposedRow?.running === true,
+      JSON.stringify({ bind: exposedRow?.bind, url: exposedRow?.exposedUrl, running: exposedRow?.running }),
+    );
+    const againE = await opExpose(cfg, TEST_ID);
+    check("expose: idempotent when already exposed", againE.ok === true && /already exposed/.test(String(againE.result)), String(againE.result ?? againE.error ?? ""));
+    const clash = await opServe(cfg, TEST_ID);
+    check("guards: serve refuses an exposed site", clash.ok === false && /unexpose/i.test(String(clash.error ?? "")), String(clash.error ?? "").slice(0, 90));
+    const unexposed = await opUnexpose(cfg, TEST_ID);
+    check("unexpose: local url restored", Boolean(unexposed.ok) && String(unexposed.url ?? "").startsWith("http://127.0.0.1:"), String(unexposed.url ?? unexposed.error));
+    const localAgain = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "20", `http://127.0.0.1:${port}/`], { encoding: "utf8" });
+    check("unexpose: homepage 200 back on loopback", localAgain === "200", `http ${localAgain}`);
+    const afterE = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    check("unexpose: bind cleared from registry", !afterE?.bind && !afterE?.exposedUrl, JSON.stringify({ bind: afterE?.bind, url: afterE?.exposedUrl }));
+  } else {
+    check("expose: refusal is actionable when tailscale is down", /tailscale/i.test(String(exposed.error ?? "")), String(exposed.error ?? "").slice(0, 140));
   }
 
   const del = await opDeleteSite(cfg, TEST_ID, TEST_ID);

@@ -624,6 +624,24 @@ export async function tailscaleDnsName() {
         return { ok: false, error: "unexpected tailscale status output" };
     }
 }
+/** This device's tailscale IPv4 (Self.TailscaleIPs) — the bind address for
+ *  tailnet-exposed sites. Resolved live; never hardcoded, never 0.0.0.0. */
+export async function tailscaleSelfIPv4() {
+    const st = await run(["tailscale", "status", "--json"], 15_000);
+    if (st.code !== 0)
+        return { ok: false, error: (st.stderr || st.stdout || "tailscale status failed").slice(0, 150) };
+    try {
+        const j = JSON.parse(st.stdout);
+        const ips = Array.isArray(j.Self?.TailscaleIPs) ? (j.Self?.TailscaleIPs).map(String) : [];
+        const ip = ips.find((a) => IPv4_RE.test(a) && !a.startsWith("127."));
+        if (!ip)
+            return { ok: false, error: "tailscale reports no IPv4 address on this device" };
+        return { ok: true, ip };
+    }
+    catch {
+        return { ok: false, error: "unexpected tailscale status output" };
+    }
+}
 export async function serveStatusRules() {
     const r = await run(["tailscale", "serve", "status", "--json"], 15_000);
     if (r.code !== 0)
@@ -705,7 +723,16 @@ export function siteProcesses(cfg, site) {
                 continue;
             const i = cmdline.indexOf("-S");
             const t = cmdline.indexOf("-t");
-            if (i >= 0 && t >= 0 && cmdline[i + 1] === `127.0.0.1:${site.port}` && fs.realpathSync(cmdline[t + 1]) === docReal) {
+            if (i < 0 || t < 0)
+                continue;
+            // Accept OUR binds only: loopback or the tailnet bind recorded for this
+            // site. The port must match, and exe + uid + docroot were verified
+            // above — a foreign process on either address is still never killed.
+            const spec = String(cmdline[i + 1] ?? "");
+            const sep = spec.lastIndexOf(":");
+            const bindHost = sep > 0 ? spec.slice(0, sep) : "";
+            const bindPort = sep > 0 ? spec.slice(sep + 1) : "";
+            if (bindPort === String(site.port) && (bindHost === "127.0.0.1" || bindHost === siteBindWants(site)) && fs.realpathSync(cmdline[t + 1]) === docReal) {
                 found.push(Number(p));
             }
         }
@@ -715,13 +742,28 @@ export function siteProcesses(cfg, site) {
     }
     return found;
 }
+const IPv4_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
+/** The address this site's php -S should listen on (validated at use time). */
+export function siteBindWants(site) {
+    return site.bind && IPv4_RE.test(site.bind) ? site.bind : "127.0.0.1";
+}
+/** Our site's port answering on loopback OR on its recorded tailnet bind. */
+export async function sitePortOpen(cfg, site) {
+    if (await portOpen("127.0.0.1", site.port, 400))
+        return true;
+    const bind = siteBindWants(site);
+    if (bind !== "127.0.0.1" && (await portOpen(bind, site.port, 400)))
+        return true;
+    return false;
+}
 export async function startSite(cfg, site) {
     const rt = await runtimeStatus(cfg);
     if (!rt.php.installed)
         return bad("php runtime missing — run bin/wp-stack-bootstrap.sh");
     if (!fs.existsSync(site.docroot))
         return bad("site files missing; delete and recreate the site");
-    if (await portOpen("127.0.0.1", site.port)) {
+    const bind = siteBindWants(site);
+    if (await sitePortOpen(cfg, site)) {
         if (siteProcesses(cfg, site).length)
             return { ok: true, result: "already running" };
         return bad(`port ${site.port} is held by a process this stack does not own — refusing`);
@@ -729,7 +771,7 @@ export async function startSite(cfg, site) {
     ensureDirs(cfg);
     const fd = fs.openSync(path.join(cfg.logsDir, `${site.id}.log`), fs.constants.O_CREAT | fs.constants.O_APPEND | fs.constants.O_WRONLY, 0o600);
     try {
-        const p = spawn(cfg.phpBin, ["-d", "memory_limit=512M", "-S", `127.0.0.1:${site.port}`, "-t", site.docroot], {
+        const p = spawn(cfg.phpBin, ["-d", "memory_limit=512M", "-S", `${bind}:${site.port}`, "-t", site.docroot], {
             detached: true,
             stdio: ["ignore", fd, fd],
             cwd: site.docroot,
@@ -747,7 +789,7 @@ export async function startSite(cfg, site) {
         fs.closeSync(fd);
     }
     for (let i = 0; i < 40; i++) {
-        if (await portOpen("127.0.0.1", site.port))
+        if (await sitePortOpen(cfg, site))
             return { ok: true, result: "started" };
         await sleep(150);
     }
@@ -756,7 +798,7 @@ export async function startSite(cfg, site) {
 export async function stopSite(cfg, site) {
     const pids = siteProcesses(cfg, site);
     if (!pids.length) {
-        if (await portOpen("127.0.0.1", site.port))
+        if (await sitePortOpen(cfg, site))
             return bad(`port ${site.port} held by a foreign process — refusing to kill it`);
         return { ok: true, result: "already stopped" };
     }
@@ -769,7 +811,7 @@ export async function stopSite(cfg, site) {
         }
     }
     for (let i = 0; i < 20; i++) {
-        if (!siteProcesses(cfg, site).length && !(await portOpen("127.0.0.1", site.port, 300)))
+        if (!siteProcesses(cfg, site).length && !(await sitePortOpen(cfg, site)))
             return { ok: true, result: "stopped" };
         await sleep(150);
     }
@@ -787,7 +829,7 @@ export async function listSites(cfg) {
     const sites = loadRegistry(cfg);
     return Promise.all(sites.map(async (s) => ({
         ...s,
-        running: (await portOpen("127.0.0.1", s.port, 400)) && siteProcesses(cfg, s).length > 0,
+        running: (await sitePortOpen(cfg, s)) && siteProcesses(cfg, s).length > 0,
         url: `http://127.0.0.1:${s.port}`,
     })));
 }
