@@ -240,7 +240,7 @@ const HTTP_ALIASES: Record<string, string> = {
   unexpose: "unexpose",
 };
 
-const PLUGIN_VERSION = "0.3.8";
+const PLUGIN_VERSION = "0.3.9";
 
 export default (() => {
   const feature = defineFeaturePlugin<typeof contract>({

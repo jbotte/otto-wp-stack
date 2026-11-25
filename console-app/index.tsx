@@ -2,15 +2,25 @@
  * WP Stack Console — agent-driven dashboard for the otto-wp-stack plugin.
  * Bundled at console-app/ so a fresh Otto can publish it with zero terminal steps.
  *
- * This template is deliberately SCRIPT-FREE and FETCH-FREE — use it whenever
- * the owner's Otto app cannot approve app scripts (apps below 2.4.0 never can;
- * the gateway only offers the appScripts capability at minAppVersion 2.4.0 and
- * silently drops scripts/ at publish otherwise). It needs no token either.
+ * This template is deliberately SCRIPT-FREE and FETCH-FREE (its only fetch is
+ * its own same-origin `config.json`) — use it whenever the owner's Otto app
+ * cannot approve app scripts (apps below 2.4.0 never can; the gateway only
+ * offers the appScripts capability at minAppVersion 2.4.0 and silently drops
+ * scripts/ at publish otherwise). It needs no token either.
  *
  * Architecture:
  *  - Reads: everything renders from otto.data, pushed by Otto (agent tool
  *    wp_stack_status -> otto_set_artifact_data) and refreshed on demand, on
- *    visibility changes, and on a slow poll.
+ *    visibility/focus changes, and on a slow poll.
+ *  - Freshness (0.3.9): the header shows the age of the last push and turns
+ *    warning-colored when it is older than the keep-fresh monitor cadence, so
+ *    "tile didn't update" is visible instead of mysterious. Tapping ↻ keeps
+ *    "waiting for Otto…" up (with a 6s rapid re-pull for a minute) until the
+ *    pushed data's ts actually changes.
+ *  - Target binding: if `config.json` next to the app holds
+ *    { "artifactId": "<artifact id>" } (written by SETUP.md after publish),
+ *    every ask names that exact artifact id for the otto_set_artifact_data
+ *    push, so a refresh can never land on a different board.
  *  - Writes: every button calls otto.ask(...) with a plain sentence; Otto runs
  *    the matching plugin tool in chat and pushes fresh data back.
  *  - Data may arrive as an object OR a JSON string (the gateway has stored it
@@ -39,6 +49,7 @@ type Data = {
   details?: { id: string; details: any } | null;
   pending?: string | null;
 };
+type Cfg = { artifactId?: string };
 
 /** The gateway may hand back data as a JSON string, an object, or a
  *  character-indexed string store; accept all three. */
@@ -65,8 +76,34 @@ function normalize(d: any): Data | null {
   return null;
 }
 
+/** ts pushed by Otto, e.g. "2026-11-24 16:39:22" (device-local). */
+function parseTs(ts?: string | null): number | null {
+  if (!ts) return null;
+  const t = Date.parse(String(ts).trim().replace(" ", "T"));
+  return Number.isFinite(t) ? t : null;
+}
+
+/** The keep-fresh automation runs every 15 min; past 35 min a push was missed. */
+const STALE_AFTER_MS = 35 * 60 * 1000;
+
+function ageLabel(ts?: string | null): string {
+  const t = parseTs(ts);
+  if (t == null) return ts ? String(ts) : "";
+  const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const h = Math.floor(mins / 60);
+  return `${h}h ${mins % 60}m ago`;
+}
+
+function isStale(ts?: string | null): boolean {
+  const t = parseTs(ts);
+  if (t == null) return true;
+  return Date.now() - t > STALE_AFTER_MS;
+}
+
 const REFRESH_ASK =
-  "WP Stack Console refresh: call wp_stack_status and push its result into the WP Stack Console app (this board) " +
+  "WP Stack Console refresh: call wp_stack_status and push its result into the WP Stack Console app " +
   "with otto_set_artifact_data as {status, sites, ts, notice: null, details: null, pending: null}, " +
   "then tell me the db and site counts in one line.";
 
@@ -81,57 +118,115 @@ function Badge({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   );
 }
 
-function ask(text: string, setPending: (s: string | null) => void) {
-  setPending(text);
-  window.otto?.ask?.(text).catch(() => {});
-  setTimeout(() => setPending(null), 4000);
+/** Optional { artifactId } beside the published app — written by SETUP.md. */
+function useConsoleConfig(): Cfg {
+  const [cfg, setCfg] = useState<Cfg>({});
+  useEffect(() => {
+    let dead = false;
+    fetch("config.json?cb=" + Date.now(), { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!dead && j && typeof j === "object" && j.artifactId) setCfg({ artifactId: String(j.artifactId) });
+      })
+      .catch(() => {});
+    return () => {
+      dead = true;
+    };
+  }, []);
+  return cfg;
 }
 
 function useConsoleData() {
   const [data, setData] = useState<Data | null>(null);
+  const [awaiting, setAwaiting] = useState(false);
   const mounted = useRef(true);
+  const lastTs = useRef<string | null>(null);
+  const awaitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rapidTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      if (awaitTimer.current) clearTimeout(awaitTimer.current);
+      if (rapidTimer.current) clearInterval(rapidTimer.current);
     };
   }, []);
+
+  const stopAwait = () => {
+    setAwaiting(false);
+    if (awaitTimer.current) {
+      clearTimeout(awaitTimer.current);
+      awaitTimer.current = null;
+    }
+    if (rapidTimer.current) {
+      clearInterval(rapidTimer.current);
+      rapidTimer.current = null;
+    }
+  };
+
+  const apply = (d: Data) => {
+    const changed = lastTs.current != null && (d.ts ?? null) !== lastTs.current;
+    lastTs.current = d.ts ?? null;
+    setData(d);
+    if (changed) stopAwait();
+  };
+
+  const pull = async () => {
+    try {
+      const raw = (await window.otto?.data?.get?.()) ?? null;
+      const d = normalize(raw);
+      if (mounted.current && d) apply(d);
+    } catch (e) {
+      console.log("[wp-console] pull failed", String(e));
+    }
+  };
+  const pullRef = useRef(pull);
+  pullRef.current = pull;
+  const applyRef = useRef(apply);
+  applyRef.current = apply;
+
+  /** ↻ / action pressed: show a live pending state and rapid re-pull until the
+   *  pushed data's ts changes (60s cap; a queued agent turn can take a bit). */
+  const beginAwait = () => {
+    setAwaiting(true);
+    if (rapidTimer.current) clearInterval(rapidTimer.current);
+    rapidTimer.current = setInterval(() => pullRef.current(), 6000);
+    if (awaitTimer.current) clearTimeout(awaitTimer.current);
+    awaitTimer.current = setTimeout(stopAwait, 60000);
+  };
+
   useEffect(() => {
-    const pull = async () => {
-      try {
-        const raw = (await window.otto?.data?.get?.()) ?? null;
-        const d = normalize(raw);
-        if (mounted.current && d) setData(d);
-      } catch (e) {
-        console.log("[wp-console] pull failed", String(e));
-      }
-    };
-    pull();
+    pullRef.current();
     const off = window.otto?.data?.onChange?.((next: any) => {
       const d = normalize(next);
-      if (mounted.current && d) setData(d);
+      if (mounted.current && d) applyRef.current(d);
     });
     // A phone view that was backgrounded can miss onChange pushes:
-    // re-pull when it becomes visible again, and poll as a safety net.
+    // re-pull when it becomes visible/focused again, and poll as a safety net.
     const onVis = () => {
-      if (document.visibilityState === "visible") pull();
+      if (document.visibilityState === "visible") pullRef.current();
     };
+    const onFocus = () => pullRef.current();
     document.addEventListener("visibilitychange", onVis);
-    const timer = setInterval(pull, 20000);
+    window.addEventListener("focus", onFocus);
+    const timer = setInterval(() => pullRef.current(), 20000);
     return () => {
       try {
         off?.();
       } catch {}
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onFocus);
       clearInterval(timer);
     };
   }, []);
-  return data;
+
+  return { data, awaiting, beginAwait };
 }
 
 export default function App() {
-  const data = useConsoleData();
-  const [pending, setPending] = useState<string | null>(null);
+  const { data, awaiting, beginAwait } = useConsoleData();
+  const cfg = useConsoleConfig();
   const [tab, setTab] = useState<"sites" | "new" | "system">("sites");
   const [form, setForm] = useState({ id: "", name: "", adminUser: "admin", email: "" });
   const [confirmDel, setConfirmDel] = useState<Record<string, string>>({});
@@ -141,9 +236,19 @@ export default function App() {
   const dbUp = !!status?.db?.up;
   const bootstrapped = !!status?.runtime?.bootstrapped;
   const notice = data?.notice ?? null;
+  const stale = isStale(data?.ts);
+
+  /** Every ask names the exact artifact when config.json gave one. */
+  const ask = (text: string) => {
+    beginAwait();
+    const target = cfg.artifactId
+      ? ` Push the fresh data with otto_set_artifact_data into artifact ${cfg.artifactId}.`
+      : "";
+    window.otto?.ask?.(text + target).catch(() => {});
+  };
 
   const siteAsk = (verb: string, id: string) =>
-    ask(`WP Stack: ${verb} the site "${id}". Then refresh the WP Stack Console board.`, setPending);
+    ask(`WP Stack: ${verb} the site "${id}". Then refresh the WP Stack Console board.`);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -156,8 +261,9 @@ export default function App() {
             <Badge ok={dbUp}>{dbUp ? "db up" : "db down"}</Badge>
           </div>
         </div>
-        <div className="o-muted" style={{ fontSize: 12 }}>
-          {data?.ts ? `updated ${data.ts}` : "waiting for first update from Otto…"}
+        <div className="o-muted" style={{ fontSize: 12, color: stale ? "var(--warn)" : undefined }}>
+          {data?.ts ? `updated ${ageLabel(data.ts)}` : "waiting for first update from Otto…"}
+          {stale ? " · stale — tap ↻" : ""}
           {status?.db?.version ? ` · ${status.db.version}` : ""}
           {status?.host?.name ? ` · ${status.host.name}` : ""}
         </div>
@@ -178,8 +284,8 @@ export default function App() {
               {t === "sites" ? `Sites (${sites.length})` : t === "new" ? "New site" : "System"}
             </button>
           ))}
-          <button className="o-btn" onClick={() => ask(REFRESH_ASK, setPending)} disabled={!!pending}>
-            ↻
+          <button className="o-btn" onClick={() => ask(REFRESH_ASK)} disabled={awaiting}>
+            {awaiting ? "…" : "↻"}
           </button>
         </div>
       </div>
@@ -194,11 +300,10 @@ export default function App() {
           <button
             className="o-btn o-btn-primary"
             style={{ marginTop: 8 }}
-            disabled={!!pending}
+            disabled={awaiting}
             onClick={() =>
               ask(
-                "WP Stack: install the wp-stack runtime with wp_stack_bootstrap (it may take several minutes — poll wp_stack_status until the phase is ready), then refresh the WP Stack Console board.",
-                setPending
+                "WP Stack: install the wp-stack runtime with wp_stack_bootstrap (it may take several minutes — poll wp_stack_status until the phase is ready), then refresh the WP Stack Console board."
               )
             }
           >
@@ -233,37 +338,37 @@ export default function App() {
               <div className="o-row" style={{ gap: 6, flexWrap: "wrap" }}>
                 {s.running ? (
                   <>
-                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("stop", s.id)}>
+                    <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("stop", s.id)}>
                       Stop
                     </button>
-                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("restart", s.id)}>
+                    <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("restart", s.id)}>
                       Restart
                     </button>
                   </>
                 ) : (
-                  <button className="o-btn o-btn-primary" disabled={pending !== null} onClick={() => siteAsk("start", s.id)}>
+                  <button className="o-btn o-btn-primary" disabled={awaiting} onClick={() => siteAsk("start", s.id)}>
                     Start
                   </button>
                 )}
-                <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("show details for", s.id)}>
+                <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("show details for", s.id)}>
                   Details
                 </button>
                 {s.serveUrl ? (
-                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("remove the HTTPS exposure of", s.id)}>
+                  <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("remove the HTTPS exposure of", s.id)}>
                     Unserve
                   </button>
                 ) : (
-                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
+                  <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
                     Serve
                   </button>
                 )}
                 {s.bind ? (
-                  <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("remove the tailnet exposure of (wp_stack_unexpose)", s.id)}>
+                  <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("remove the tailnet exposure of (wp_stack_unexpose)", s.id)}>
                     Unexpose
                   </button>
                 ) : (
                   !s.serveUrl && (
-                    <button className="o-btn" disabled={pending !== null} onClick={() => siteAsk("expose on the tailnet with wp_stack_expose", s.id)}>
+                    <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("expose on the tailnet with wp_stack_expose", s.id)}>
                       Expose
                     </button>
                   )
@@ -339,15 +444,14 @@ export default function App() {
           </div>
           <button
             className="o-btn o-btn-primary"
-            disabled={pending !== null || !form.id || !form.name || !form.adminUser || !form.email}
+            disabled={awaiting || !form.id || !form.name || !form.adminUser || !form.email}
             onClick={() =>
               ask(
-                `WP Stack: create a site with id "${form.id}", name "${form.name}", admin user "${form.adminUser}", email "${form.email}". Show the one-time admin password here, then refresh the WP Stack Console board.`,
-                setPending
+                `WP Stack: create a site with id "${form.id}", name "${form.name}", admin user "${form.adminUser}", email "${form.email}". Show the one-time admin password here, then refresh the WP Stack Console board.`
               )
             }
           >
-            {pending ? "Sent to Otto…" : "Create site"}
+            {awaiting ? "Sent to Otto…" : "Create site"}
           </button>
         </div>
       )}
@@ -379,28 +483,29 @@ export default function App() {
           <div className="o-row" style={{ gap: 8, marginTop: 4 }}>
             <button
               className="o-btn"
-              disabled={pending !== null}
-              onClick={() => ask("WP Stack: start the stack database (wp_stack_db start), then refresh the board.", setPending)}
+              disabled={awaiting}
+              onClick={() => ask("WP Stack: start the stack database (wp_stack_db start), then refresh the board.")}
             >
               Start db
             </button>
             <button
               className="o-btn"
-              disabled={pending !== null}
-              onClick={() => ask("WP Stack: stop the stack database (wp_stack_db stop), then refresh the board.", setPending)}
+              disabled={awaiting}
+              onClick={() => ask("WP Stack: stop the stack database (wp_stack_db stop), then refresh the board.")}
             >
               Stop db
             </button>
           </div>
           <div className="o-muted" style={{ fontSize: 11, marginTop: 4 }}>
-            Console talks to Otto through chat — no token, no scripts, no direct API. Data refreshed {data?.ts || "never"}.
+            Console talks to Otto through chat — no token, no scripts, no direct API. Data refreshed{" "}
+            {data?.ts ? ageLabel(data.ts) : "never"}.
           </div>
         </div>
       )}
 
-      {pending && (
+      {awaiting && (
         <div className="o-muted" style={{ fontSize: 12 }}>
-          Sent to Otto: {pending.slice(0, 80)}…
+          Sent to Otto — waiting for fresh data…
         </div>
       )}
     </div>
@@ -408,9 +513,10 @@ export default function App() {
 }
 
 export function Widget() {
-  const data = useConsoleData();
+  const { data } = useConsoleData();
   const sites = data?.sites ?? [];
   const dbUp = !!data?.status?.db?.up;
+  const stale = isStale(data?.ts);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 2 }}>
       <div className="o-row" style={{ justifyContent: "space-between", alignItems: "center" }}>
@@ -423,7 +529,10 @@ export function Widget() {
           site{sites.length === 1 ? "" : "s"} · {sites.filter((s) => s.running).length} running
         </span>
       </div>
-      <div className="o-muted" style={{ fontSize: 11 }}>{data?.ts ? `updated ${data.ts}` : "no data yet"}</div>
+      <div style={{ fontSize: 11, color: stale ? "var(--warn)" : "var(--muted)" }}>
+        {data?.ts ? `updated ${ageLabel(data.ts)}` : "no data yet"}
+        {stale ? " · open the app and tap ↻" : ""}
+      </div>
     </div>
   );
 }

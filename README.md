@@ -231,6 +231,22 @@ Publishing to ClawHub is the owner's action.
 
 ## Changelog
 
+- **0.3.9** — Console freshness, made deterministic (the "tile didn't update on refresh" fix).
+  - **Fix (`console-app/`):** the header now shows the AGE of the last push
+    ("updated 34 min ago") and turns warning-colored past 35 minutes with a
+    "stale — tap ↻" hint, so a waiting-for-push tile is visibly waiting;
+    the Widget shows the same cue. Tapping ↻ (or any action button) keeps a
+    "waiting for Otto…" indicator with a 6s rapid re-pull for a minute until
+    the pushed data's `ts` actually changes, instead of a fixed 4s flash;
+    views also re-pull on window focus.
+  - **Fix (wrong-board pushes):** the template reads an optional
+    `config.json` (`{ "artifactId": "…" }`) beside the published app and
+    names that exact artifact id in every ask's push instruction, so a
+    refresh can never land on a similarly-named board. SETUP.md now has the
+    agent write it after publish and keep exactly ONE
+    `Keep WP Stack Console board fresh` monitor (every 15 min, deterministic:
+    `wp_stack_status` → `otto_set_artifact_data` into that id), cancelling
+    stale duplicates.
 - **0.3.8** — Tailnet exposure without the tailscale operator grant.
   - **New:** `wp_stack_expose` / `wp_stack_unexpose` agent tools (plus HTTP `expose`/`unexpose` ops and dashboard Expose/Unexpose buttons) — a site's own `php -S` binds to the LIVE tailscale IPv4 (resolved from `tailscale status`, never 0.0.0.0) and WordPress `siteurl`/`home` follow to `http://<magicdns>:<site port>`, so any tailnet device can open the site on its own registry port. No tailscaled mutation, so it works without the one-time `sudo tailscale set --operator=…` grant. Plain HTTP — HTTPS stays the `wp_stack_serve` path, and the two are mutually exclusive per site (serve needs the loopback bind; both tools refuse with the fix). Failures roll the site back to 127.0.0.1 with its local URLs, and `standalone-check` now curls each site over its tailscale bind in the live e2e.
 - **0.3.7** — Zero-command deploy, end to end.
