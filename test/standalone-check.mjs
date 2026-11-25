@@ -51,6 +51,9 @@ function check(name, ok, detail = "") {
 }
 
 const cfg = resolveConfig({});
+// 0.3.10 defaults create to auto-expose; the lifecycle checks below pin the
+// classic loopback bind via an explicit autoExpose:false config.
+const cfgLoop = { ...cfg, autoExpose: false };
 
 // ---------------------------------------------------------------------------
 // A. Isolation gate
@@ -125,7 +128,7 @@ check("full: runtime user is agent (not root)", full.status?.host?.user === "age
 // create a real WordPress site through the engine only
 const TEST_ID = "stackcheck";
 await opDeleteSite(cfg, TEST_ID, TEST_ID); // clean any leftover
-const created = await opCreate(cfg, TEST_ID, "Standalone Check", "stackcheck", "check@example.com");
+const created = await opCreate(cfgLoop, TEST_ID, "Standalone Check", "stackcheck", "check@example.com");
 check("create: WordPress site created (own db + own php server)", Boolean(created.ok && created.site), String(created.error ?? created.site?.port ?? ""));
 
 if (created.ok && created.site) {
@@ -203,6 +206,30 @@ if (created.ok && created.site) {
     check("unexpose: bind cleared from registry", !afterE?.bind && !afterE?.exposedUrl, JSON.stringify({ bind: afterE?.bind, url: afterE?.exposedUrl }));
   } else {
     check("expose: refusal is actionable when tailscale is down", /tailscale/i.test(String(exposed.error ?? "")), String(exposed.error ?? "").slice(0, 140));
+  }
+
+  // auto-expose default (0.3.10): create with the DEFAULT config must leave the
+  // site tailnet-bound (bind + exposedUrl + tailnet line in the message), or
+  // report exposeSkipped with a tailscale reason when tailscale is down — the
+  // creation itself must never fail because of exposure.
+  await opDeleteSite(cfg, TEST_ID, TEST_ID);
+  const ae = await opCreate(cfg, TEST_ID, "Auto-expose Check", "stackcheck", "check@example.com");
+  check("auto-expose: create succeeds with default config", Boolean(ae.ok && ae.site), String(ae.error ?? ""));
+  if (ae.ok && ae.site) {
+    const aeRow = (await opSites(cfg)).sites?.find((s) => s.id === TEST_ID);
+    if (ae.exposeSkipped) {
+      check("auto-expose: skipped only for a tailscale reason", /tailscale/i.test(String(ae.exposeSkipped)), String(ae.exposeSkipped).slice(0, 120));
+      check("auto-expose: creation still succeeds when expose skipped", Boolean(aeRow?.running) && !aeRow?.bind, JSON.stringify({ bind: aeRow?.bind, running: aeRow?.running }));
+    } else {
+      check(
+        "auto-expose: registry records bind + exposed url",
+        Boolean(aeRow?.bind && /^http:\/\/[^\s:]+:\d+$/.test(String(aeRow?.exposedUrl))),
+        JSON.stringify({ bind: aeRow?.bind, url: aeRow?.exposedUrl }),
+      );
+      check("auto-expose: message carries the tailnet url", String(ae.message).includes(String(aeRow?.exposedUrl)), String(ae.message).slice(-90));
+      const aeHttp = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "20", `http://${aeRow?.bind}:${ae.site.port}/`], { encoding: "utf8" });
+      check("auto-expose: homepage answers 200 on the tailscale bind", aeHttp === "200", `http ${aeHttp}`);
+    }
   }
 
   const del = await opDeleteSite(cfg, TEST_ID, TEST_ID);

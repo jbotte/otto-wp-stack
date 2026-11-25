@@ -124,7 +124,29 @@ export async function opCreate(
   adminUser: string,
   email: string,
 ): Promise<Out> {
-  return createSite(cfg, id, name, adminUser, email);
+  const created = await createSite(cfg, id, name, adminUser, email);
+  // New sites default to tailnet exposure (0.3.10): the expose path binds the
+  // site's own php -S to the tailscale IPv4 — no operator grant, unlike serve.
+  // An expose failure never undoes the creation; it is reported as a note.
+  if (!created.ok || cfg.autoExpose === false) return created;
+  const ex = await opExpose(cfg, id);
+  if (!ex.ok) {
+    return {
+      ...created,
+      exposeSkipped: ex.error,
+      message: String(created.message ?? "") + ` (auto-expose skipped: ${ex.error})`,
+      ts: stamp(),
+    };
+  }
+  return {
+    ...created,
+    site: (ex.site as unknown) ?? created.site,
+    sites: (ex.sites as unknown) ?? created.sites,
+    exposedUrl: ex.exposedUrl,
+    bind: ex.bind,
+    message: String(created.message ?? "") + ` Open it on your tailnet at ${String(ex.exposedUrl ?? "")}.`,
+    ts: stamp(),
+  };
 }
 
 export async function opDeleteSite(cfg: StackConfig, id: string, confirm: string): Promise<Out> {

@@ -98,7 +98,7 @@ const contract = defineFeatureContract({
         },
         "create-site": {
             kind: "action",
-            description: "Create a new WordPress site (own database + own php server). One-time admin password returned once.",
+            description: "Create a new WordPress site (own database + own php server). One-time admin password returned once. New sites are auto-exposed on the tailnet (wp_stack_expose path) unless the plugin config sets autoExpose:false — the result carries exposedUrl.",
             input: Type.Object({
                 id: Type.String({ minLength: 1, maxLength: 64 }),
                 name: Type.String({ minLength: 1, maxLength: 120 }),
@@ -184,6 +184,7 @@ const CONFIG_SCHEMA = Type.Object({
     portMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last site port (default 8199)." })),
     servePortMin: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "First HTTPS port wp_stack_serve may allocate (default 8443)." })),
     servePortMax: Type.Optional(Type.Integer({ minimum: 1024, maximum: 65535, description: "Last HTTPS port wp_stack_serve may allocate (default 8499)." })),
+    autoExpose: Type.Optional(Type.Boolean({ description: "Automatically expose new sites on the tailnet after create (wp_stack_expose path — plain HTTP on the site port, no operator grant). Default true." })),
     apiToken: Type.Optional(Type.String({ minLength: 16, description: "Bearer token for /otto-wp-stack/api. If unset, one is generated and written to .api-token in the plugin directory." })),
 });
 const MUTATIONS = new Set(["site-action", "create-site", "delete-site", "db-action", "bootstrap-run", "serve", "unserve", "expose", "unexpose"]);
@@ -205,7 +206,7 @@ const HTTP_ALIASES = {
     expose: "expose",
     unexpose: "unexpose",
 };
-const PLUGIN_VERSION = "0.3.9";
+const PLUGIN_VERSION = "0.3.10";
 export default (() => {
     const feature = defineFeaturePlugin({
         contract,

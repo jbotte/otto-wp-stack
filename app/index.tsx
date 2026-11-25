@@ -12,6 +12,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const otto = window.otto;
 
+/** Serve (wp_stack_serve, HTTPS via Tailscale Serve) needs a one-time owner-side
+ *  `sudo tailscale set --operator=…` grant that an agent cannot prompt for — the
+ *  container blocks privilege escalation. Buttons hidden until a grant-prompt path
+ *  exists; asking Otto in chat still works. Expose stays the zero-grant path. */
+const SHOW_SERVE: boolean = false;
+
 // Dashboard argv vocabulary -> plugin operation + named args (mirrors scripts/stack.mjs).
 function translate(argv) {
   const [cmd, ...a] = argv;
@@ -411,11 +417,12 @@ export default function App() {
                 {!s.running && <button className="o-btn o-btn-primary" disabled={!!busy} onClick={() => run("start", ["site-action", s.id, "start"])}>Start</button>}
                 {s.running && <button className="o-btn" disabled={!!busy} onClick={() => run("stop", ["site-action", s.id, "stop"])}>Stop</button>}
                 {s.running && <button className="o-btn" disabled={!!busy} onClick={() => run("restart", ["site-action", s.id, "restart"])}>Restart</button>}
-                {s.servePort ? (
-                  <button className="o-btn" disabled={!!busy} onClick={() => run("unserve", ["unserve", s.id])}>Unserve</button>
-                ) : (
-                  <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
-                )}
+                {SHOW_SERVE &&
+                  (s.servePort ? (
+                    <button className="o-btn" disabled={!!busy} onClick={() => run("unserve", ["unserve", s.id])}>Unserve</button>
+                  ) : (
+                    <button className="o-btn" disabled={!!busy} onClick={() => run("serve", ["serve", s.id])} title="Expose over HTTPS via Tailscale Serve">Serve</button>
+                  ))}
                 {s.exposedUrl && <a className="o-btn" style={{ textDecoration: "none", fontSize: 12, borderColor: "var(--accent)" }} href={s.exposedUrl} target="_blank" rel="noreferrer">Open tailnet</a>}
                 {s.bind ? (
                   <button className="o-btn" disabled={!!busy} onClick={() => run("unexpose", ["unexpose", s.id])}>Unexpose</button>
@@ -461,7 +468,7 @@ export default function App() {
               onClick={() => run("create", ["create", form.id, form.name, form.adminUser, form.email], (j) => { if (j.ok) { setForm({ id: "", name: "", adminUser: "", email: "" }); setShowPw(j.message); } })}>
               {busy === "create" ? "Creating… (downloads WordPress)" : "Create site"}
             </button>
-            <div className="o-muted" style={{ fontSize: 12 }}>Creates its own database (wps_*) on the stack's own MariaDB and serves via its own PHP server. Admin password is shown once.</div>
+            <div className="o-muted" style={{ fontSize: 12 }}>Creates its own database (wps_*) on the stack's own MariaDB and serves via its own PHP server. Admin password is shown once. New sites are auto-exposed on the tailnet (the result carries the URL).</div>
           </div>
           {showPw && (
             <div className="o-card" style={{ marginTop: 8, borderColor: "var(--accent)" }}>
@@ -505,7 +512,7 @@ export default function App() {
               </Row>
             ))}
             <div className="o-muted" style={{ fontSize: 12, marginTop: 6 }}>
-              Tap <b>Serve</b> on a site card (or ask Otto: <i>“serve the demo site”</i>) to expose it over HTTPS via the plugin's wp_stack_serve tool — no terminal needed. If tailscale denies the change, the error names the one-time operator grant (<code style={{ fontFamily: "var(--font-mono)" }}>sudo tailscale set --operator=&lt;agent user&gt;</code>).
+              Ask Otto <i>“serve the demo site”</i> to expose it over HTTPS via the plugin's wp_stack_serve tool. It needs a one-time owner-side tailscale operator grant (<code style={{ fontFamily: "var(--font-mono)" }}>sudo tailscale set --operator=&lt;agent user&gt;</code>) run in a terminal on the Otto; until that grant exists, <b>Expose</b> is the zero-grant tailnet path.
             </div>
           </div>
         </div>

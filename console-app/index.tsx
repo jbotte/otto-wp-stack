@@ -30,6 +30,12 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 
+/** Serve (wp_stack_serve, HTTPS via Tailscale Serve) needs a one-time owner-side
+ *  `sudo tailscale set --operator=…` grant that an agent cannot prompt for — the
+ *  container blocks privilege escalation. Hidden until a grant-prompt path exists;
+ *  Expose (plain-HTTP tailnet binding) remains the zero-grant exposure path. */
+const SHOW_SERVE: boolean = false;
+
 type Site = {
   id: string;
   name?: string;
@@ -353,15 +359,19 @@ export default function App() {
                 <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("show details for", s.id)}>
                   Details
                 </button>
-                {s.serveUrl ? (
-                  <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("remove the HTTPS exposure of", s.id)}>
-                    Unserve
-                  </button>
-                ) : (
-                  <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
-                    Serve
-                  </button>
-                )}
+                {/* Serve/Unserve hidden for now: wp_stack_serve needs a one-time owner-side
+                    `sudo tailscale set --operator=…` grant the agent cannot prompt for.
+                    Flip SHOW_SERVE back to true when a grant-prompt path exists. */}
+                {SHOW_SERVE &&
+                  (s.serveUrl ? (
+                    <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("remove the HTTPS exposure of", s.id)}>
+                      Unserve
+                    </button>
+                  ) : (
+                    <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("expose over HTTPS with wp_stack_serve", s.id)}>
+                      Serve
+                    </button>
+                  ))}
                 {s.bind ? (
                   <button className="o-btn" disabled={awaiting} onClick={() => siteAsk("remove the tailnet exposure of (wp_stack_unexpose)", s.id)}>
                     Unexpose
@@ -440,7 +450,7 @@ export default function App() {
             </label>
           ))}
           <div className="o-muted" style={{ fontSize: 12 }}>
-            The one-time admin password is shown once, in this chat.
+            The one-time admin password is shown once, in this chat. New sites are auto-exposed on your tailnet — Otto replies with the URL.
           </div>
           <button
             className="o-btn o-btn-primary"

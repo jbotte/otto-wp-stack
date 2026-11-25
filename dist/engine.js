@@ -53,6 +53,7 @@ export const DEFAULTS = {
     portMax: 8199,
     servePortMin: 8443,
     servePortMax: 8499,
+    autoExpose: true,
     phpBin: "",
     wpCli: "",
     mariadbDir: "",

@@ -40,6 +40,9 @@ export type StackConfig = {
   /** HTTPS ports wp_stack_serve may allocate for Tailscale Serve rules */
   servePortMin: number;
   servePortMax: number;
+  /** When true (default), createSite also runs the expose path (wp_stack_expose:
+   *  plain-HTTP tailnet binding, no operator grant needed) for the new site. */
+  autoExpose: boolean;
   /** derived paths (filled by resolveConfig when empty) */
   phpBin: string;
   wpCli: string;
@@ -78,6 +81,7 @@ export const DEFAULTS: StackConfig = {
   portMax: 8199,
   servePortMin: 8443,
   servePortMax: 8499,
+  autoExpose: true,
   phpBin: "",
   wpCli: "",
   mariadbDir: "",
