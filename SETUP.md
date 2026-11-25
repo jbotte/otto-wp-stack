@@ -48,7 +48,24 @@ Decision:
    Otto. First push: tap **↻** (or ask *"refresh the WP Stack Console board"*);
    the agent calls `wp_stack_status` and pushes `{status, sites, ts, …}` via
    `otto_set_artifact_data`.
-3. Don't leave both published; one board per Otto is the deal.
+3. **Bind the board to its artifact id** (0.3.9): after publishing, write
+   `<workspace>/apps/wp-stack-console/config.json` containing
+   `{ "artifactId": "<the id publish returned>" }` and publish again with the
+   same id so the file ships. The template reads it and names that exact
+   artifact in every ask's push instruction, so a refresh can never land on a
+   different board.
+4. **Keep it fresh — exactly one monitor:** create ONE recurring automation
+   titled `Keep WP Stack Console board fresh` (every 15 minutes, notify only
+   on change) whose instructions are deterministic:
+   1. call the `wp_stack_status` tool;
+   2. push the result with `otto_set_artifact_data` as
+      `{status, sites, ts, notice: null, details: null, pending: null}` into
+      artifact `<that exact artifactId>`.
+   Before creating it, cancel any other automation with this title (stale
+   cadences or an old artifact id cause the "tile never updates" confusion —
+   the tile shows the last PUSH, and the ↻ button is a chat round-trip, so
+   exactly one deterministic pusher is what keeps it honest).
+5. Don't leave both templates published; one board per Otto is the deal.
 
 If a published scripts app mysteriously can't run its script (probe shows the
 script path failing while browser→route works), that's the <2.4.0 case — switch
