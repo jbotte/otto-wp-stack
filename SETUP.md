@@ -28,7 +28,7 @@ The package ships TWO publishable dashboard templates:
 | template | folder | needs |
 |---|---|---|
 | **scripts app** (live, direct) | `app/` | the Otto app must be able to approve app **scripts** |
-| **console app** (chat-driven) | `console-app/` | nothing — works on every Otto app |
+| **console app** (direct REST or chat) | `console-app/` | nothing — works on every Otto app |
 
 The gateway only offers the `appScripts` capability (capabilityOffered) when
 the Otto app is **>= 2.4.0** (`minAppVersion` gate in main.js). On older apps
@@ -43,17 +43,41 @@ Decision:
 2. Otherwise (or when unknown, or when the scripts capability card never
    appeared / `scripts/` was dropped at publish) → copy
    `<plugin-install>/console-app/` to `<workspace>/apps/wp-stack-console/`
-   and publish. The console needs no token, no scripts and no network
-   capability: it renders `otto.data` and its buttons `otto.ask` sentences to
-   Otto. First push: tap **↻** (or ask *"refresh the WP Stack Console board"*);
-   the agent calls `wp_stack_status` and pushes `{status, sites, ts, …}` via
-   `otto_set_artifact_data`.
-3. **Bind the board to its artifact id** (0.3.9): after publishing, write
-   `<workspace>/apps/wp-stack-console/config.json` containing
-   `{ "artifactId": "<the id publish returned>" }` and publish again with the
-   same id so the file ships. The template reads it and names that exact
-   artifact in every ask's push instruction, so a refresh can never land on a
-   different board.
+   and publish. The console needs no scripts on any Otto app version. Its
+   buttons have two modes, decided by `config.json` (step 3): **REST mode**
+   (bound) calls the plugin HTTP API directly over the gateway's
+   tailnet-served https URL — no chat round trip, no model turn; **chat
+   mode** (unbound) sends Otto a plain sentence per button and Otto runs the
+   matching plugin tool. First push: tap **↻** (or ask *"refresh the WP
+   Stack Console board"*); the agent calls `wp_stack_status` and pushes
+   `{status, sites, ts, …}` via `otto_set_artifact_data`.
+3. **Bind the board — `config.json` (0.3.9 + 0.3.11):** after publishing,
+   write `<workspace>/apps/wp-stack-console/config.json` and publish again
+   with the same id so the file ships:
+
+   ```json
+   {
+     "artifactId": "<the id publish returned>",
+     "apiBase": "https://<gateway magicdns>",
+     "token": "<contents of the plugin folder's .api-token>"
+   }
+   ```
+
+   - `artifactId` makes every ask's push name that exact artifact, so a
+     refresh can never land on a different board.
+   - `apiBase` + `token` unlock REST mode: read the box's MagicDNS from
+     `tailscale status --json` (`Self.DNSName`) and confirm the gateway has a
+     serve root via `tailscale serve status` (on Otto the gateway is normally
+     served at `https://<magicdns>/`). Read `.api-token` from the plugin
+     folder with the file tool and write it into config.json — never echo the
+     token into chat. Note the agent's own curl against its box's MagicDNS
+     can fail (a box does not always resolve its own name) — that is NOT a
+     bind failure; the real verification is the tile header flipping to
+     "live · just now" from the owner's device. Phones cannot resolve tailnet
+     names, so REST buttons shine from tailnet devices (e.g. the Otto desktop
+     app on a Mac); chat mode works everywhere.
+   - If tailscale is absent, the gateway is not served, or the owner prefers
+     it: write `{ "artifactId": … }` only — the tile stays in chat mode.
 4. **Keep it fresh — exactly one monitor:** create ONE recurring automation
    titled `Keep WP Stack Console board fresh` (every 15 minutes, notify only
    on change) whose instructions are deterministic:

@@ -1,6 +1,6 @@
 {
   "name": "@lunarlyra/otto-wp-stack",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "Headless WordPress dev-stack backend for Otto: typed agent tools + a token-authed HTTP API the dashboard artifact talks to.",
   "type": "module",
   "license": "MIT",

@@ -231,6 +231,30 @@ Publishing to ClawHub is the owner's action.
 
 ## Changelog
 
+- **0.3.11** — Console tile goes direct: the bundled `console-app/` now calls the
+  plugin REST API itself, no agent in the loop, on every Otto app version.
+  - **REST mode (`console-app/`):** when `config.json` beside the app carries
+    `{ apiBase, token }` (written by SETUP.md — MagicDNS of the tailnet-served
+    gateway + the plugin's `.api-token`), every button — create,
+    type-to-confirm delete, start/stop/restart, expose/unexpose, db
+    start/stop, ↻ — POSTs straight to `/otto-wp-stack/api`. No scripts
+    capability needed, so unlike `app/` this works below Otto app 2.4.0.
+    `otto.ask` remains only for the long runtime install and the stale-board
+    push.
+  - **Chat mode (unchanged default):** without `apiBase`/`token` in
+    `config.json`, every button degrades to the 0.3.9 behaviour — a sentence
+    to Otto via `otto.ask` — so boards on unserved gateways are unaffected.
+  - **UX:** real **Delete** button per site (arm → type the id → confirm),
+    create-result banner showing the one-time admin password when the tool
+    returns it, per-action busy states, live snapshot pulls (header reads
+    "live · just now") alongside the keep-fresh pushes, clearer
+    network/401/network-binding errors.
+  - **Docs:** SETUP.md step 3 now writes `apiBase`+`token` (with the
+    "a box may not resolve its own MagicDNS — verify from the owner's
+    device" note); dashboard table labels the console "direct REST or chat".
+- **0.3.10** — New sites are auto-exposed on the tailnet by default; the
+  Serve/Unserve buttons are hidden in both board templates (Serve still
+  available from chat; it needs the one-time tailscale operator grant).
 - **0.3.9** — Console freshness, made deterministic (the "tile didn't update on refresh" fix).
   - **Fix (`console-app/`):** the header now shows the AGE of the last push
     ("updated 34 min ago") and turns warning-colored past 35 minutes with a

@@ -206,7 +206,7 @@ const HTTP_ALIASES = {
     expose: "expose",
     unexpose: "unexpose",
 };
-const PLUGIN_VERSION = "0.3.10";
+const PLUGIN_VERSION = "0.3.11";
 export default (() => {
     const feature = defineFeaturePlugin({
         contract,
