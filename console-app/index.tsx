@@ -370,12 +370,29 @@ export default function App() {
     }
   };
 
+  /** Async-UX: control that should get focus when an op fails (retry target). */
+  const focusOnFail = useRef<string | null>(null);
+
+  /** Pending label for buttons + the live region, e.g. stop-my-site -> "Stopping…". */
+  const pendingLabel = (key: string): string => {
+    if (key === "db-start") return "Starting db…";
+    if (key === "db-stop") return "Stopping db…";
+    if (key === "create") return "Creating…";
+    if (key.startsWith("del-")) return "Deleting…";
+    const map: Record<string, string> = {
+      stop: "Stopping", start: "Starting", restart: "Restarting",
+      expose: "Exposing", unexpose: "Unexposing", serve: "Serving", unserve: "Unserving",
+    };
+    return (map[key.split("-")[0]] || "Working") + "…";
+  };
+
   /** Plugin action: direct REST when bound; otherwise degrade to a chat ask. */
   const act = async (
     key: string,
     op: string,
     args: Record<string, unknown>,
     onOk?: (res: any) => void,
+    failFocusId?: string,
   ) => {
     if (busy) return;
     if (!restReady) {
@@ -383,7 +400,9 @@ export default function App() {
       onOk?.({ ok: true, degraded: true });
       return;
     }
+    focusOnFail.current = failFocusId || "op-" + key;
     setBusy(key);
+    let failed = false;
     try {
       const raw = await call(op, args);
       const res = raw && typeof raw === "object" ? raw : {};
@@ -392,9 +411,11 @@ export default function App() {
         showToast(String(res.message || "done"), true);
         onOk?.(res);
       } else {
+        failed = true;
         showToast(String(res.error || res.message || "failed"), false);
       }
     } catch (e) {
+      failed = true;
       const msg = String((e as any)?.message || e);
       showToast(
         /HTTP 401|unauthorized/i.test(msg)
@@ -406,6 +427,9 @@ export default function App() {
       );
     } finally {
       setBusy(null);
+      // Async-UX rule: after a failure, focus the control that can retry/fix.
+      if (failed)
+        setTimeout(() => document.getElementById(focusOnFail.current || "op-" + key)?.focus(), 30);
       refreshLive();
       pull();
     }
@@ -428,7 +452,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }} aria-busy={busy !== null}>
       {/* Header */}
       <div className="o-card" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <div className="o-row" style={{ justifyContent: "space-between", alignItems: "center" }}>
@@ -464,6 +488,7 @@ export default function App() {
           <button
             className="o-btn"
             disabled={busy !== null}
+            aria-label="Refresh board now"
             onClick={() => {
               if (restReady) {
                 beginAwait();
@@ -479,15 +504,29 @@ export default function App() {
         </div>
       </div>
 
-      {toast && (
-        <div
-          className="o-card"
-          style={{ borderColor: toast.ok ? "var(--ok)" : "var(--danger)", fontSize: 13, wordBreak: "break-word" }}
-        >
-          <span style={{ color: toast.ok ? "var(--ok)" : "var(--danger)" }}>{toast.ok ? "✓ " : "✗ "}</span>
-          {toast.msg}
-        </div>
-      )}
+      {/* Persistent live regions: pending/success polite, failures assertive. */}
+      <div role="status" aria-live="polite" aria-atomic="true">
+        {busy || (toast && toast.ok) ? (
+          <div
+            className="o-card"
+            style={{ borderColor: busy ? "var(--accent)" : "var(--ok)", fontSize: 13, wordBreak: "break-word" }}
+          >
+            <span style={{ color: busy ? "var(--accent)" : "var(--ok)" }}>{busy ? "⟳ " : "✓ "}</span>
+            {busy ? pendingLabel(busy) : toast!.msg}
+          </div>
+        ) : null}
+      </div>
+      <div role="alert" aria-live="assertive" aria-atomic="true">
+        {toast && !toast.ok ? (
+          <div
+            className="o-card"
+            style={{ borderColor: "var(--danger)", fontSize: 13, wordBreak: "break-word" }}
+          >
+            <span style={{ color: "var(--danger)" }}>✗ </span>
+            {toast.msg}
+          </div>
+        ) : null}
+      </div>
 
       {/* runtime banner — long install goes through chat, everything else is direct */}
       {status && !bootstrapped && (
@@ -546,7 +585,7 @@ export default function App() {
             </div>
           )}
           {sites.map((s) => (
-            <div key={s.id} className="o-card" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div key={s.id} className="o-card" style={{ display: "flex", flexDirection: "column", gap: 6 }} aria-busy={(busy ?? "").endsWith("-" + s.id) || undefined}>
               <div className="o-row" style={{ justifyContent: "space-between" }}>
                 <div style={{ fontWeight: 600 }}>{s.name || s.id}</div>
                 <div className="o-row" style={{ gap: 6 }}>
@@ -565,27 +604,30 @@ export default function App() {
                 {s.running ? (
                   <>
                     <button
+                      id={`op-stop-${s.id}`}
                       className="o-btn"
                       disabled={busy !== null}
                       onClick={() => act(`stop-${s.id}`, "site-action", { siteId: s.id, action: "stop" })}
                     >
-                      {busy === `stop-${s.id}` ? "…" : "Stop"}
+                      {busy === `stop-${s.id}` ? "Stopping…" : "Stop"}
                     </button>
                     <button
+                      id={`op-restart-${s.id}`}
                       className="o-btn"
                       disabled={busy !== null}
                       onClick={() => act(`restart-${s.id}`, "site-action", { siteId: s.id, action: "restart" })}
                     >
-                      {busy === `restart-${s.id}` ? "…" : "Restart"}
+                      {busy === `restart-${s.id}` ? "Restarting…" : "Restart"}
                     </button>
                   </>
                 ) : (
                   <button
+                    id={`op-start-${s.id}`}
                     className="o-btn o-btn-primary"
                     disabled={busy !== null}
                     onClick={() => act(`start-${s.id}`, "site-action", { siteId: s.id, action: "start" })}
                   >
-                    {busy === `start-${s.id}` ? "…" : "Start"}
+                    {busy === `start-${s.id}` ? "Starting…" : "Start"}
                   </button>
                 )}
                 <button className="o-btn" disabled={busy !== null} onClick={() => showDetails(s.id)}>
@@ -594,37 +636,41 @@ export default function App() {
                 {SHOW_SERVE &&
                   (s.serveUrl ? (
                     <button
+                      id={`op-unserve-${s.id}`}
                       className="o-btn"
                       disabled={busy !== null}
                       onClick={() => act(`unserve-${s.id}`, "unserve", { siteId: s.id })}
                     >
-                      Unserve
+                      {busy === `unserve-${s.id}` ? "Unserving…" : "Unserve"}
                     </button>
                   ) : (
                     <button
+                      id={`op-serve-${s.id}`}
                       className="o-btn"
                       disabled={busy !== null}
                       onClick={() => act(`serve-${s.id}`, "serve", { siteId: s.id })}
                     >
-                      Serve
+                      {busy === `serve-${s.id}` ? "Serving…" : "Serve"}
                     </button>
                   ))}
                 {s.bind ? (
                   <button
+                    id={`op-unexpose-${s.id}`}
                     className="o-btn"
                     disabled={busy !== null}
                     onClick={() => act(`unexpose-${s.id}`, "unexpose", { siteId: s.id })}
                   >
-                    {busy === `unexpose-${s.id}` ? "…" : "Unexpose"}
+                    {busy === `unexpose-${s.id}` ? "Unexposing…" : "Unexpose"}
                   </button>
                 ) : (
                   !s.serveUrl && (
                     <button
+                      id={`op-expose-${s.id}`}
                       className="o-btn"
                       disabled={busy !== null}
                       onClick={() => act(`expose-${s.id}`, "expose", { siteId: s.id })}
                     >
-                      {busy === `expose-${s.id}` ? "…" : "Expose"}
+                      {busy === `expose-${s.id}` ? "Exposing…" : "Expose"}
                     </button>
                   )
                 )}
@@ -635,10 +681,13 @@ export default function App() {
                       placeholder={`type "${s.id}" to confirm`}
                       value={confirmDel[s.id + "_typed"] || ""}
                       onChange={(e) => setConfirmDel((c) => ({ ...c, [s.id + "_typed"]: e.target.value }))}
-                      style={{ width: 170, fontSize: 12 }}
+                      readOnly={busy !== null}
+                      aria-disabled={busy !== null || undefined}
+                      style={{ width: 170, fontSize: 12, opacity: busy !== null ? 0.6 : undefined }}
                     />
                     {(confirmDel[s.id + "_typed"] || "") === s.id ? (
                       <button
+                        id={`op-del-${s.id}`}
                         className="o-btn"
                         style={{ color: "var(--danger)", borderColor: "var(--danger)" }}
                         disabled={busy !== null}
@@ -647,7 +696,7 @@ export default function App() {
                           act(`del-${s.id}`, "delete-site", { id: s.id, confirm: s.id });
                         }}
                       >
-                        {busy === `del-${s.id}` ? "…" : "Confirm delete"}
+                        {busy === `del-${s.id}` ? "Deleting…" : "Confirm delete"}
                       </button>
                     ) : null}
                     <button
@@ -708,11 +757,14 @@ export default function App() {
             <label key={k} style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 12, color: "var(--muted)" }}>
               {label}
               <input
+                id={`wps-field-${k}`}
                 className="o-btn"
-                style={{ textAlign: "left", fontSize: 14 }}
+                style={{ textAlign: "left", fontSize: 14, opacity: busy !== null ? 0.6 : undefined }}
                 placeholder={ph}
                 value={(form as any)[k]}
                 onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
+                readOnly={busy !== null}
+                aria-disabled={busy !== null || undefined}
               />
             </label>
           ))}
@@ -725,6 +777,7 @@ export default function App() {
             disabled={busy !== null || !form.id || !form.name || !form.adminUser || !form.email}
             onClick={() => {
               const id = form.id.trim();
+              // Field values are snapshotted here, before anything locks.
               act(
                 "create",
                 "create-site",
@@ -738,6 +791,7 @@ export default function App() {
                   setForm({ id: "", name: "", adminUser: "admin", email: "" });
                   setTab("sites");
                 },
+                "wps-field-id",
               );
             }}
           >
@@ -772,18 +826,20 @@ export default function App() {
           </div>
           <div className="o-row" style={{ gap: 8, marginTop: 4 }}>
             <button
+              id="op-db-start"
               className="o-btn"
               disabled={busy !== null}
               onClick={() => act("db-start", "db-action", { action: "start" })}
             >
-              {busy === "db-start" ? "…" : "Start db"}
+              {busy === "db-start" ? "Starting db…" : "Start db"}
             </button>
             <button
+              id="op-db-stop"
               className="o-btn"
               disabled={busy !== null}
               onClick={() => act("db-stop", "db-action", { action: "stop" })}
             >
-              {busy === "db-stop" ? "…" : "Stop db"}
+              {busy === "db-stop" ? "Stopping db…" : "Stop db"}
             </button>
           </div>
           <div className="o-row" style={{ gap: 8, marginTop: 2 }}>

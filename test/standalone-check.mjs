@@ -83,6 +83,7 @@ const codeFiles = [
   "app/scripts/stack.mjs",
   "console-app/index.tsx",
   "SETUP.md",
+  "test/template-syntax-check.mjs",
   "../apps/wp-stack-next/scripts/stack.mjs",
   "../apps/wp-stack-next/index.tsx",
 ];

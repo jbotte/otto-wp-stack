@@ -249,6 +249,18 @@ Publishing to ClawHub is the owner's action.
     returns it, per-action busy states, live snapshot pulls (header reads
     "live · just now") alongside the keep-fresh pushes, clearer
     network/401/network-binding errors.
+  - **Async-UX pass (both templates):** the whole create form locks while a
+    create is running (fields go read-only with `aria-disabled`; values are
+    snapshotted before locking); repeat clicks are guarded and the guard
+    resets on every exit path; buttons carry real pending labels
+    ("Creating…", "Stopping…", "Deleting…") instead of "…"; results announce
+    through persistent live regions (`role="status"` polite for
+    pending/success, `role="alert"` assertive for failures); a failed op
+    returns focus to the control that can retry or fix it; mutating regions
+    get `aria-busy`.
+  - **Tests:** adds `test/template-syntax-check.mjs` — a transpile-parse gate
+    for the two board templates (`app/`, `console-app/`), which live outside
+    tsconfig and were previously unguarded.
   - **Docs:** SETUP.md step 3 now writes `apiBase`+`token` (with the
     "a box may not resolve its own MagicDNS — verify from the owner's
     device" note); dashboard table labels the console "direct REST or chat".
