@@ -231,6 +231,42 @@ Publishing to ClawHub is the owner's action.
 
 ## Changelog
 
+- **0.3.11** — Console tile goes direct: the bundled `console-app/` now calls the
+  plugin REST API itself, no agent in the loop, on every Otto app version.
+  - **REST mode (`console-app/`):** when `config.json` beside the app carries
+    `{ apiBase, token }` (written by SETUP.md — MagicDNS of the tailnet-served
+    gateway + the plugin's `.api-token`), every button — create,
+    type-to-confirm delete, start/stop/restart, expose/unexpose, db
+    start/stop, ↻ — POSTs straight to `/otto-wp-stack/api`. No scripts
+    capability needed, so unlike `app/` this works below Otto app 2.4.0.
+    `otto.ask` remains only for the long runtime install and the stale-board
+    push.
+  - **Chat mode (unchanged default):** without `apiBase`/`token` in
+    `config.json`, every button degrades to the 0.3.9 behaviour — a sentence
+    to Otto via `otto.ask` — so boards on unserved gateways are unaffected.
+  - **UX:** real **Delete** button per site (arm → type the id → confirm),
+    create-result banner showing the one-time admin password when the tool
+    returns it, per-action busy states, live snapshot pulls (header reads
+    "live · just now") alongside the keep-fresh pushes, clearer
+    network/401/network-binding errors.
+  - **Async-UX pass (both templates):** the whole create form locks while a
+    create is running (fields go read-only with `aria-disabled`; values are
+    snapshotted before locking); repeat clicks are guarded and the guard
+    resets on every exit path; buttons carry real pending labels
+    ("Creating…", "Stopping…", "Deleting…") instead of "…"; results announce
+    through persistent live regions (`role="status"` polite for
+    pending/success, `role="alert"` assertive for failures); a failed op
+    returns focus to the control that can retry or fix it; mutating regions
+    get `aria-busy`.
+  - **Tests:** adds `test/template-syntax-check.mjs` — a transpile-parse gate
+    for the two board templates (`app/`, `console-app/`), which live outside
+    tsconfig and were previously unguarded.
+  - **Docs:** SETUP.md step 3 now writes `apiBase`+`token` (with the
+    "a box may not resolve its own MagicDNS — verify from the owner's
+    device" note); dashboard table labels the console "direct REST or chat".
+- **0.3.10** — New sites are auto-exposed on the tailnet by default; the
+  Serve/Unserve buttons are hidden in both board templates (Serve still
+  available from chat; it needs the one-time tailscale operator grant).
 - **0.3.9** — Console freshness, made deterministic (the "tile didn't update on refresh" fix).
   - **Fix (`console-app/`):** the header now shows the AGE of the last push
     ("updated 34 min ago") and turns warning-colored past 35 minutes with a
