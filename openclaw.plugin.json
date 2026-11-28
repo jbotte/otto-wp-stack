@@ -40,6 +40,10 @@
         "type": "string",
         "description": "Stack-owned MariaDB user created by bin/wp-stack-bootstrap.sh (default wp_stack)."
       },
+      "autoExpose": {
+        "type": "boolean",
+        "description": "Automatically expose new sites on the tailnet after create (wp_stack_expose path — plain HTTP on the site's own port, bound to the tailscale IPv4 only, no operator grant). Default true; set false to keep new sites loopback-only until you expose them explicitly."
+      },
       "portMin": {
         "type": "integer",
         "minimum": 1024,

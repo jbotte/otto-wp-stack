@@ -114,7 +114,24 @@ export function portOpen(host, port, timeoutMs = 700) {
         s.once("error", () => done(false));
     });
 }
-export function run(argv, timeoutMs = 25_000) {
+/**
+ * Minimal environment for site-facing child processes (php -S, wp-cli, and the
+ * stack's own mariadbd). Site code must never inherit the gateway account's
+ * environment (provider API keys, proxy credentials, arbitrary config vars):
+ * only what OUR static PHP + wp-cli phar + mariadbd genuinely need is
+ * whitelisted — our runtime bin dir plus the usual system paths, and HOME
+ * pointed INSIDE the stack so option files (~/.my.cnf, wp-cli cache) resolve
+ * under stackRoot instead of the agent's home directory.
+ */
+export function siteEnv(cfg) {
+    return {
+        PATH: `${path.dirname(cfg.phpBin)}:/usr/local/bin:/usr/bin:/bin`,
+        HOME: cfg.stackRoot,
+        TMPDIR: os.tmpdir(),
+        LANG: "C.UTF-8",
+    };
+}
+export function run(argv, timeoutMs = 25_000, env) {
     return new Promise((resolve) => {
         const [cmd, ...args] = argv;
         let settled = false;
@@ -125,7 +142,7 @@ export function run(argv, timeoutMs = 25_000) {
             }
         };
         try {
-            execFile(cmd, args, { timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 }, (err, stdout, stderr) => {
+            execFile(cmd, args, { timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024, ...(env ? { env } : {}) }, (err, stdout, stderr) => {
                 if (err && err.code === "ENOENT") {
                     done(127, "", `missing: ${cmd}`);
                     return;
@@ -542,7 +559,7 @@ export async function startDb(cfg) {
                 "--skip-name-resolve",
                 "--skip-networking=0",
                 `--log-error=${path.join(cfg.logsDir, "mariadb.log")}`,
-            ], { detached: true, stdio: ["ignore", log, log], cwd: cfg.stackRoot });
+            ], { detached: true, stdio: ["ignore", log, log], cwd: cfg.stackRoot, env: siteEnv(cfg) });
             await new Promise((res, rej) => {
                 p.once("spawn", () => res());
                 p.once("error", (e) => rej(e));
@@ -691,7 +708,9 @@ export async function tailscaleServeSet(sitePort, httpsPort, add) {
 // WP-CLI + site processes
 // ---------------------------------------------------------------------------
 export async function wpCli(cfg, docroot, args, timeoutMs = 120_000) {
-    return run([cfg.phpBin, "-d", "memory_limit=1G", cfg.wpCli, `--path=${docroot}`, "--skip-plugins", "--skip-themes", ...args], timeoutMs);
+    // wp-cli loads site code (wp-settings.php) — run it with the same minimal
+    // site environment as the site's own php -S, never the gateway's env.
+    return run([cfg.phpBin, "-d", "memory_limit=1G", cfg.wpCli, `--path=${docroot}`, "--skip-plugins", "--skip-themes", ...args], timeoutMs, siteEnv(cfg));
 }
 /** All PIDs that are OUR php -S for this exact port + docroot. */
 export function siteProcesses(cfg, site) {
@@ -776,6 +795,7 @@ export async function startSite(cfg, site) {
             detached: true,
             stdio: ["ignore", fd, fd],
             cwd: site.docroot,
+            env: siteEnv(cfg),
         });
         await new Promise((res, rej) => {
             p.once("spawn", () => res());
